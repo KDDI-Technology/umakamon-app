@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+<meta name="description" content="Pusher for [RG]">
+<link rel="apple-touch-icon" type="image/png" href="./img/apple-touch-icon-180x180.png">
+<link rel="icon" type="image/png" href="./img/kuso-192x192.png">
+<title>くそアプリ</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-36DH9CHHRB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-36DH9CHHRB');
+</script>
+<style>
+@font-face {
+  font-family: 'KTEGAKI';
+  src: url('./libs/font.spicy-sweet.com/KTEGAKI.ttf') format('truetype');
+}
+*{
+  margin:0px;
+  padding:0px;
+  box-sizing: border-box;
+  font-family: 'KTEGAKI';
+}
+html,body {
+  height: 100%;
+  margin: 0;
+  background-color: black;
+  overflow:hidden;
+}
+#main{
+  position:relative;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+#pixi_wrapper{
+  width: 100%;
+  height: 100%;
+}
+.c1{
+  margin-top:60px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  text-align: center;
+  font-size:24px;
+  vertical-align: middle;
+  line-height: 32px;
+  color:white;
+}
+.c2{
+  box-sizing: border-box;
+  width: 100%;
+  height: 128px;
+}
+#loading{
+  font-size: 20px;
+  text-align:center;
+  display:inline-block;
+  width:100%;
+  height:48px;
+  color:white;
+}
+#dpig{
+  background-image: url("./img/kuso1.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+#outer{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top: 0;
+  left: 0;
+  background-color:black;
+  z-index: 10;
+}
+#fv{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  height:calc(100% - 80px);
+}
+
+#start{
+  text-align:center;
+  display:inline-block;
+  width:240px;
+  height:40px;
+  font-size: 24px;
+  line-height: 40px;
+  vertical-align: center;
+  color:black;
+  background-color: pink;
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;  
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.hide{
+  display: none!important;
+}
+
+#ai{
+  position: absolute;
+  bottom: 20px;
+  left: 10px;
+  width: 100px;
+  height: 40px;
+  font-size: 16px;
+  line-height: 40px;
+  text-align: center;
+  vertical-align: center;
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;  
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.sound_on{
+  background-color: yellow;
+}
+.sound_off{
+  background-color: white;
+}
+#bpmWrapper{
+  position: absolute;
+  top:50px;
+  left:10px;
+  width:100px;
+  height:20px;
+  display: flex;
+}
+.label{
+  background-color: yellow;
+  width:50px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+}
+#bpmValue{
+  background-color: #3300FF;
+  color:white;
+  width:50px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+}
+
+#titleWrapper{
+  position: absolute;
+  top:10px;
+  left:10px;
+  width:165px;
+  height:30px;
+  display: flex;  
+  background-color:white;
+}
+.logo{
+  width:30px;
+  height:30px;
+  background-image:url(./img/kuso-192x192.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+#title{
+  width:135px;
+  height:30px;
+  line-height: 30px;
+  vertical-align: middle;
+  padding-left:5px;
+}
+#loadingAnim{
+  width:100%;
+  height:40px;
+  background-image:url(./img/trim2.gif);
+  background-repeat: repeat-x;
+  background-size: contain;
+  background-position: left;
+}
+#connectionWrap{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:150px;
+  height:20px;
+  display: flex;
+}
+#connectionValue{
+  background-color: white;
+  color:black;
+  width:100px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+}
+#usersWrap{
+  position:absolute;
+  top:40px;
+  right:10px;
+  width:100px;
+  height:20px;
+  display: flex;
+}
+#usersValue{
+  background-color: white;
+  color:black;
+  width:50px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+}
+#inWrap{
+  position:absolute;
+  top:50px;
+  left:10px;
+  width:100px;
+  height:20px;
+  display: flex;
+}
+#inValue{
+  background-color: white;
+  color:black;
+  width:50px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+}
+#goWrap{
+  position:absolute;
+  top:80px;
+  left:10px;
+  width:100px;
+  height:20px;
+  display: flex;
+}
+#goValue{
+  background-color: white;
+  color:black;
+  width:50px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+}
+#push{
+  position:absolute;
+  bottom:-40px;
+  right:-40px;
+  width:240px;
+  height:240px;
+  border-radius: 120px;
+  background-color:pink;
+  font-size:64px;
+  line-height: 220px;
+  text-align: center;
+  vertical-align: middle;
+  transform:rotate(-45deg);
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;  
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.talogo{
+  position:absolute;
+  bottom:10px;
+  left:10px;
+  width:82px;
+  height:41px;
+  background-image:url(./img/talogo.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+.connected{
+  background-color: deeppink!important;
+}
+.unsupported{
+  background-color: darkgray!important;
+}
+.supported{
+  background-color: pink!important;
+  color:black!important;
+}
+
+@media screen and (min-width: 481px) {
+
+} /* @Media */
+@media screen and (max-width: 480px) {
+
+} /* @Media */
+
+</style>
+</head>
+<body>
+<div id="main">
+  <div id="pixi_wrapper"></div>
+  <div class="talogo"></div>
+  <div id="titleWrapper">
+    <div class="logo"></div>
+    <div id="title">くそアプリ</div>
+  </div>
+  <div id="connectionWrap">
+    <div class="label">WS</div>
+    <div id="connectionValue">disconnected</div>
+  </div>
+  <div id="usersWrap">
+    <div class="label">ゲスト</div>
+    <div id="usersValue">0</div>
+  </div>
+  <div id="inWrap">
+    <div class="label">キタ</div>
+    <div id="inValue">0</div>
+  </div>
+  <div id="goWrap">
+    <div class="label">出た</div>
+    <div id="goValue">0</div>
+  </div>
+  <div id="push">出す！!</div>
+  <div id="outer">
+    <div id="fv">
+      <div class="c1" id="dtitle">くそアプリ</div>
+      <div class="c2" id="dpig"></div>
+      <div id="loading">Now Loading....</div>
+      <div id="loadingAnim"></div>
+      <div id="start" class="hide">START</div>
+    </div>
+    <a href="https://mz4u.net/"><div class="talogo"></div></a>
+  </div>
+</div>
+<script type="module">
+const $start = document.querySelector('#start');
+const $push = document.querySelector('#push');
+const $outer = document.querySelector('#outer');
+const $pixi_wrapper = document.querySelector('#pixi_wrapper');
+const $loading = document.querySelector('#loading');
+const $loadingAnim = document.querySelector('#loadingAnim');
+const $main = document.querySelector('#main');
+const $connectionValue = document.querySelector('#connectionValue');
+const $dtitle = document.querySelector('#dtitle');
+
+const $appleIcon = document.head.querySelector('link[rel="apple-touch-icon"]');
+const $icon = document.head.querySelector('link[rel="icon"]');
+const $logo = document.querySelector(".logo");
+const $dpig = document.querySelector("#dpig");
+const $usersValue = document.querySelector("#usersValue");
+const $inValue = document.querySelector("#inValue");
+const $goValue = document.querySelector("#goValue");
+
+let param = location.search;
+let inCnt = 0;
+let goCnt = 0;
+
+$start.onclick = async (e) => {
+  $outer.classList.add("hide");
+  playEfx();
+  await requestWakeLock();
+};
+
+document.onvisibilitychange = async (e) =>{
+  if(document.visibilityState == "hidden"){
+  }else if(document.visibilityState === 'visible'){
+  	if (wakeLock !== null){
+      await requestWakeLock();
+  	}
+  }
+}
+
+let animTimer = null;
+const ANIM_TIME = 1000;
+
+$push.onmousedown = $push.ontouchstart = (e) =>{
+//  console.log("push mousedown");
+  e.preventDefault();
+  $push.classList.add("connected");
+
+  let _index = Math.floor(Math.random() * 3);
+
+  socket.emit("push",_index);
+  goCnt ++;
+  $goValue.innerHTML = goCnt;
+  startKuso(_index);
+};
+
+function startKuso(_index){
+  if(animTimer != null){
+    clearTimeout(animTimer);
+    anim.removeFace();
+  }
+  let sindex = Math.floor(Math.random() * 16);
+  smp2.play(null,sindex,1);
+  anim.startBgLines();
+  anim.addFace(_index);
+  animTimer = setTimeout((e)=>{
+    anim.stopBgLines();
+    anim.removeFace();
+    animTimer = null;
+  },ANIM_TIME);
+}
+
+$push.onmouseup = $push.ontouchend = (e) =>{
+  console.log("push mousedown");
+  e.preventDefault();
+  $push.classList.remove("connected");
+};
+
+///////////////////////////////////////////////////////////////////////
+// UI Efx
+import posmp from "./libs/posmp2.mjs";
+
+const sampler = new posmp();
+await sampler.init("./wav/efx1.wav").catch((err)=>null);
+
+function playEfx(num){
+  sampler.play();
+}
+
+import smp from "./libs/colabPlayer.mjs";
+let ac = new AudioContext();
+const smp2 = new smp(ac);
+await smp2.load();
+
+
+///////////////////////////////////////////////////////////////////////
+// screen wake lock
+let wakeLock = null;
+
+const requestWakeLock = async () => {
+  try {
+    if(wakeLock != null){
+      if(wakeLock.released == false){
+        return;
+      }
+    }
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      console.log('Screen Wake Lock was released');
+    });
+    console.log('Screen Wake Lock is active');
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+};
+
+await requestWakeLock();
+
+///////////////////////////////////////////////////////////////////////
+// animation
+
+import animation from "./libs/animation-v6-kuso.mjs";
+
+const anim = new animation();
+anim.init($pixi_wrapper);
+
+window.addEventListener('resize', ()=>{
+  const width = $main.getBoundingClientRect().width;
+  const height = $main.getBoundingClientRect().height;
+  anim.resize(width, height);
+});
+
+const observer = new MutationObserver(() => {
+  const width = $main.getBoundingClientRect().width;
+  const height = $main.getBoundingClientRect().height;
+  anim.resize(width, height);
+});
+observer.observe($main, {
+  attriblutes: true,
+  attributeFilter: ["style"]
+});
+
+
+///////////////////////////////////////////////////////////////////////
+// WebSocket
+import {io} from "./libs/socket.io.esm.min.js";
+
+const socket = io({transports:["websocket"],path:"/ws"});
+
+socket.on("connect", () => {
+  console.log("socket connected :"+socket.id);
+  $connectionValue.innerHTML = "connected";
+  socket.emit("client","kuso");
+});
+
+socket.on("disconnect", () => {
+  console.log("socket disconnected");
+  $connectionValue.innerHTML = "disconnected";
+});
+
+socket.on("push", (index)=>{
+  console.log("push received!");
+  inCnt ++;
+  $inValue.innerHTML = inCnt;
+  startKuso(index);
+});
+
+socket.on("users", (num)=>{
+  console.log("users="+num);
+  $usersValue.innerHTML = num - 1;
+});
+
+
+///////////////////////////////////////////////////////////////////////
+// Loading Completed
+
+$loading.innerHTML = "Loading completed. <br>↓↓↓ Push Start Buttun !! ↓↓↓";
+$start.classList.remove("hide");
+$loadingAnim.classList.add("hide");
+
+</script>  
+</body>
+</html>
