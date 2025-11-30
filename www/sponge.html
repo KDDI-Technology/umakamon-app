@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1" />
+<meta name="description" content="sponge test" />
+<style>
+*{
+  margin:10px;
+  padding:10px;
+  box-sizing: border-box;
+  color:white;
+}
+html,body {
+  height: 100%;
+  margin: 0;
+  background-color: black;
+  overflow:hidden;
+}
+#val{
+  margin:20px;
+  font-size:96px;
+}
+</style>
+</head>
+<body>
+<h1>Sponge Test</h1>
+<div id="main">
+  <div id="val">0</div>
+</div>
+<script type="module">
+const $val = document.querySelector("#val");
+
+import spongeMIDI from "./libs/spongeMIDI.mjs";
+const sponge = new spongeMIDI();
+await sponge.init();
+sponge.setOnSponge(onSponge);
+function onSponge(value){
+  console.log("onSponge() value="+value);
+  $val.innerHTML = value;
+}
+</script>  
+</body>
+</html>

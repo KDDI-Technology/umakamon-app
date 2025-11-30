@@ -5,7 +5,7 @@
   "type": "module",
   "main": "app.mjs",
   "scripts": {
-    "start": "node app.mjs"
+    "start": "node ./app.mjs"
   },
   "author": "D.F.Mac. @TripArts Music",
   "license": "MIT",

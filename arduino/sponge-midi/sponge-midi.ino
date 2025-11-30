@@ -1,4 +1,18 @@
+/*
+ * sponge-midi
+ * (c)2025 by KDDI Technology
+ * Programmed by H.Kodama (D.F.Mac.@TripArts Music)
+ */
+
+extern "C" void flash_get_unique_id(uint8_t *p);
+
 #include <Adafruit_NeoPixel.h>
+#include <Adafruit_TinyUSB.h>
+#include <MIDI.h>
+#include "makeUUID.h"
+
+Adafruit_USBD_MIDI usb_midi;
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);
 
 #define LED_POWER 11
 #define LED_PIN 12 // NeoPixel
@@ -9,6 +23,31 @@ Adafruit_NeoPixel pixels(1, LED_PIN);
 #define INTERVAL_MS 50 // 50ms
 #define CALIB_TIMES 500
 #define CALIB_INTERVAL_MS 10
+
+#define MIDI_CC_NUMBER 0x30
+#define MIDI_MIDI_CHANNEL 1 
+
+char prdDescStr[30];
+
+void makePrdDescStr(){
+  uint8_t uuid[11];
+
+  flash_get_unique_id(uuid);
+  prdDescStr[0] = 's';
+  prdDescStr[1] = 'p';
+  prdDescStr[2] = 'o';
+  prdDescStr[3] = 'n';
+  prdDescStr[4] = 'g';
+  prdDescStr[5] = 'e';
+  prdDescStr[6] = 'M';
+  prdDescStr[7] = 'I';
+  prdDescStr[8] = 'D';
+  prdDescStr[9] = 'I';
+  prdDescStr[10] = '-';
+  prdDescStr[23] = 0;
+  convert8bitToAscii(uuid,&(prdDescStr[11]));
+  // prdDescStr[11] ++; // For patching when duplicate uuids are obtained
+}
 
 int calibData[CALIB_TIMES];
 int median = 0;
@@ -85,12 +124,32 @@ int medianPercentClipInt(int data[], int n, int percentile) {
   }
 }
 
+void sendValue(int val){
+  int diff = val - median;
+  int value = abs(diff) - thrValue;
+  if(value > 127){
+    value = 127;
+  }
+  MIDI.sendControlChange(MIDI_CC_NUMBER,value,MIDI_MIDI_CHANNEL);
+  SerialTinyUSB.println(value);
+}
+
 void setup() {
+  if (!TinyUSBDevice.isInitialized()) {
+    TinyUSBDevice.begin(0);
+  }
+  makePrdDescStr();
+  USBDevice.setProductDescriptor((const char *)prdDescStr);
+  USBDevice.setSerialDescriptor((const char *)&(prdDescStr[11]));
+
   pixels.begin();
   pinMode(LED_POWER, OUTPUT);
   digitalWrite(LED_POWER, HIGH);
 
-  Serial.begin(115200);
+  SerialTinyUSB.begin(115200);
+  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.turnThruOff();
+
   ledOnB();
   delay(2000);
   ledOff();
@@ -98,28 +157,25 @@ void setup() {
   calib();
 }
 
-
 void calib(){
   int cnt;
-  Serial.println("Calibration Started.");
-  Serial.println("Don't touch sensor.");
+  SerialTinyUSB.println("Calibration Started.");
+  SerialTinyUSB.println("Don't touch sensor.");
   ledOn();
   for(cnt=0;cnt<CALIB_TIMES;cnt++){
     int data = analogRead(A0);
     calibData[cnt] = data;
-    delay(CALIB_INTERVAL_MS);
-    
+    delay(CALIB_INTERVAL_MS); 
   }
   median = medianPercentClipInt(calibData,500,5);
-  Serial.print("median = ");
-  Serial.println(median);
+  SerialTinyUSB.print("median = ");
+  SerialTinyUSB.println(median);
   ledOff();
-  Serial.println("Calibration finished.");
+  SerialTinyUSB.println("Calibration finished.");
 }
 
 void loop() {
   int data = analogRead(A0);
-  Serial.println(data);
   if(latchCnt > 0){
     latchCnt --;
     if(latchCnt == 0){
@@ -148,8 +204,8 @@ void loop() {
       value = data;  
     }
     if(data < median){
-      Serial.print("P fire = ");
-      Serial.println(value);
+      SerialTinyUSB.print("P =");
+      sendValue(value);
       value = median;
       latchCnt = LATCH_MAX;
       prevMode = mod;
@@ -161,8 +217,8 @@ void loop() {
       value = data;  
     }
     if(data > median){
-      Serial.print("N fire = ");
-      Serial.println(value);
+      SerialTinyUSB.print("N =");
+      sendValue(value);
       value = median;
       latchCnt = LATCH_MAX;
       prevMode = mod;
