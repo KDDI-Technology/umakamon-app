@@ -1,3 +1,6 @@
+// onebutton.mjs
+// (C)2024 by D.F.Mac.@TripArts Music
+
 import pomidi from "./pomidi.mjs";
 
 class OneButton{

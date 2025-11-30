@@ -1,13 +1,13 @@
 {
-  "name": "kuso-app",
-  "version": "1.0.0",
-  "description": "kuso-app",
+  "name": "umakamon-app",
+  "version": "0.0.1",
+  "description": "umakamon-app",
   "type": "module",
   "main": "app.mjs",
   "scripts": {
     "start": "node ./app.mjs"
   },
-  "author": "D.F.Mac. @TripArts Music",
+  "author": "KDDI Technology",
   "license": "MIT",
   "dependencies": {
     "basic-auth": "^2.0.1",

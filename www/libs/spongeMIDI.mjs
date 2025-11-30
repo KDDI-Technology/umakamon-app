@@ -1,3 +1,8 @@
+// spongeMIDI.mjs
+// spongeMIDI device driver
+// (C)2025 by KDDI Technology
+// Programmed by H.Kodama (D.F.Mac.@TripArts Music)
+
 import pomidi from "./pomidi.mjs";
 
 class spongeMIDI{

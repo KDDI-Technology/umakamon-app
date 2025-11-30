@@ -1,3 +1,8 @@
+// ui-register.mjs
+// umakamon app user registration UI
+// (C)2025 by KDDI Technology
+// Programmed by H.Kodama (D.F.Mac.@TripArts Music)
+
 import avatar from "../libs/animal-avatar-generator.esm.js";
 
 const html = `
@@ -123,7 +128,6 @@ const html = `
     <div id="uiRegMessage">登録しました!</div>
   </div>
 </div>
-
 `;
 
 const NG_WORDS = ["しね","ころ", "ばか","まぬけ","ちん","まん","うん","あほ"];
@@ -131,8 +135,9 @@ const HIRAGANA = "あいうえおかがきぎくぐけげこごさざしじす�
 const HIRAGANA_HEAD = HIRAGANA.replace(/ん/g, "");
 
 class uiRegister{
-  constructor(dom){
+  constructor(dom,socket){
     this.dom = dom;
+    this.socket = socket;
     this.status = "hide";
     this.composing = false;
     this.iconSVG = null;
@@ -163,6 +168,9 @@ class uiRegister{
     this.dom.classList.remove("hide");
     this.status = "show";
     this.$commit.onclick = (()=>{
+
+      // todo; 保存処理を行う
+
       this.startMessage();
     });
     this.genIcon();

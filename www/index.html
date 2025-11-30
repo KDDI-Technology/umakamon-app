@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+index.html
+umakamon-app
+(c)2025 by KDDI Technology
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
@@ -530,13 +535,13 @@ $start.classList.remove("hide");
 $loadingAnim.classList.add("hide");
 
 ///////////////////////////////////////////////////////////////////////
-// Loading Completed
+// Register UI
 import uiReg from "./popup/ui-register.mjs";
 const $reg = document.querySelector("#register");
-const uireg = new uiReg($reg);
+const uireg = new uiReg($reg,socket);
 uireg.init();
 
-uireg.show();
+uireg.show(); // for Testing
 
 </script>  
 </body>

@@ -1,4 +1,4 @@
-# nagasaki-app
+# umakamon-app
 長崎の某イベントで展示するアプリの開発用repoです。
 
 (T.B.D.)詳細決定後記載します。
