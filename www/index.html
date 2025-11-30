@@ -38,12 +38,11 @@ html,body {
   margin-top:60px;
   box-sizing: border-box;
   width: 100%;
-  height: 32px;
-  text-align: center;
-  font-size:24px;
-  vertical-align: middle;
-  line-height: 32px;
-  color:white;
+  height: 180px;
+  background-image: url("./img/umakamon-logo.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
 }
 .c2{
   box-sizing: border-box;
@@ -85,9 +84,9 @@ html,body {
   text-align:center;
   display:inline-block;
   width:240px;
-  height:40px;
-  font-size: 24px;
-  line-height: 40px;
+  height:60px;
+  font-size: 32px;
+  line-height: 60px;
   vertical-align: center;
   color:black;
   background-color: pink;
@@ -98,6 +97,7 @@ html,body {
   -ms-user-select: none;  
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+  border-radius:60px;
 }
 .hide{
   display: none!important;
@@ -157,10 +157,13 @@ html,body {
   position: absolute;
   top:10px;
   left:10px;
-  width:165px;
-  height:30px;
+  width:130px;
+  height:60px;
   display: flex;  
-  background-color:white;
+  background-image:url(./img/umakamon-logo.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
 }
 .logo{
   width:30px;
@@ -187,7 +190,7 @@ html,body {
 }
 #connectionWrap{
   position:absolute;
-  top:10px;
+  top:80px;
   right:10px;
   width:150px;
   height:20px;
@@ -204,7 +207,7 @@ html,body {
 }
 #usersWrap{
   position:absolute;
-  top:40px;
+  top:110px;
   right:10px;
   width:100px;
   height:20px;
@@ -221,7 +224,7 @@ html,body {
 }
 #inWrap{
   position:absolute;
-  top:50px;
+  top:80px;
   left:10px;
   width:100px;
   height:20px;
@@ -238,7 +241,7 @@ html,body {
 }
 #goWrap{
   position:absolute;
-  top:80px;
+  top:110px;
   left:10px;
   width:100px;
   height:20px;
@@ -278,8 +281,8 @@ html,body {
   position:absolute;
   bottom:10px;
   left:10px;
-  width:150px;
-  height:75px;
+  width:80px;
+  height:40px;
   background-image:url(./img/logo-ktec-512x256.png);
   background-repeat: no-repeat;
   background-size: contain;
@@ -294,6 +297,14 @@ html,body {
 .supported{
   background-color: pink!important;
   color:black!important;
+}
+#register{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top: 0;
+  left: 0;
+  z-index: 10;
 }
 
 @media screen and (min-width: 481px) {
@@ -310,12 +321,10 @@ html,body {
   <div id="pixi_wrapper"></div>
   <div class="talogo"></div>
   <div id="titleWrapper">
-    <div class="logo"></div>
-    <div id="title">うまかもん！</div>
   </div>
   <div id="connectionWrap">
-    <div class="label">WS</div>
-    <div id="connectionValue">disconnected</div>
+    <div class="label">サーバ</div>
+    <div id="connectionValue">きれてる</div>
   </div>
   <div id="usersWrap">
     <div class="label">ゲスト</div>
@@ -329,17 +338,19 @@ html,body {
     <div class="label">出た</div>
     <div id="goValue">0</div>
   </div>
-  <div id="push">出す！!</div>
+  <div id="push">飛ばす!</div>
+  <div id="register" class="hide"></div>
   <div id="outer">
     <div id="fv">
-      <div class="c1" id="dtitle">うまかもん！</div>
+      <div class="c1" id="dtitle"></div>
       <div class="c2" id="dpig"></div>
       <div id="loading">Now Loading....</div>
       <div id="loadingAnim"></div>
-      <div id="start" class="hide">START</div>
+      <div id="start" class="hide">スタート</div>
     </div>
-    <a href="https://kddi-tech.net/"><div class="kteclogo"></div></a>
+    <a href="https://kddi-tech.com/" target="_blank"><div class="kteclogo"></div></a>
   </div>
+  <a href="https://kddi-tech.com/" target="_blank"><div class="kteclogo"></div></a>
 </div>
 <script type="module">
 const $start = document.querySelector('#start');
@@ -383,7 +394,6 @@ let animTimer = null;
 const ANIM_TIME = 1000;
 
 $push.onmousedown = $push.ontouchstart = (e) =>{
-//  console.log("push mousedown");
   e.preventDefault();
   $push.classList.add("connected");
 
@@ -392,10 +402,10 @@ $push.onmousedown = $push.ontouchstart = (e) =>{
   socket.emit("push",_index);
   goCnt ++;
   $goValue.innerHTML = goCnt;
-  startKuso(_index);
+  startAnim(_index);
 };
 
-function startKuso(_index){
+function startAnim(_index){
   if(animTimer != null){
     clearTimeout(animTimer);
     anim.removeFace();
@@ -490,20 +500,20 @@ const socket = io({transports:["websocket"],path:"/ws"});
 
 socket.on("connect", () => {
   console.log("socket connected :"+socket.id);
-  $connectionValue.innerHTML = "connected";
+  $connectionValue.innerHTML = "つながってる";
   socket.emit("client","kuso");
 });
 
 socket.on("disconnect", () => {
   console.log("socket disconnected");
-  $connectionValue.innerHTML = "disconnected";
+  $connectionValue.innerHTML = "きれてる";
 });
 
 socket.on("push", (index)=>{
   console.log("push received!");
   inCnt ++;
   $inValue.innerHTML = inCnt;
-  startKuso(index);
+  startAnim(index);
 });
 
 socket.on("users", (num)=>{
@@ -515,9 +525,18 @@ socket.on("users", (num)=>{
 ///////////////////////////////////////////////////////////////////////
 // Loading Completed
 
-$loading.innerHTML = "Loading completed. <br>↓↓↓ Push Start Buttun !! ↓↓↓";
+$loading.innerHTML = "ロードがおわりました！ <br>下のボタンを押してね！ ↓↓↓";
 $start.classList.remove("hide");
 $loadingAnim.classList.add("hide");
+
+///////////////////////////////////////////////////////////////////////
+// Loading Completed
+import uiReg from "./popup/ui-register.mjs";
+const $reg = document.querySelector("#register");
+const uireg = new uiReg($reg);
+uireg.init();
+
+uireg.show();
 
 </script>  
 </body>
