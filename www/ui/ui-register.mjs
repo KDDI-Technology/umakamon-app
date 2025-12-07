@@ -29,6 +29,7 @@ const html = `
   width:100%;
   height:100%;
   background-color: pink;
+  border-radius:5px;
 }
 #uiRegText{
   width:100%;
@@ -57,6 +58,7 @@ const html = `
   width:128px;
   height:128px;
   background-color: white;
+  cursor:pointer;
 }
 #uiRegCommit{
   width:160px;
@@ -102,6 +104,9 @@ const html = `
   width:90px;
   height:32px;
 }
+.hide{
+  display:none!important;
+}
 
 </style>
 <div id="uiRegWrap">
@@ -141,8 +146,9 @@ class uiRegister{
     this.status = "hide";
     this.composing = false;
     this.iconSVG = null;
+    this.userData = null;
   }
-  init(){
+  async init(){
     this.dom.innerHTML = html;
     this.$wrap = this.dom.querySelector("#uiRegWrap");
     this.$main = this.dom.querySelector("#uiRegMain");
@@ -153,6 +159,39 @@ class uiRegister{
     this.$icon = this.dom.querySelector("#uiRegIcon");
     this.hide();
     this.$commit.onclick = null;
+    this.$icon.onclick = (()=>{
+      this.#genIcon(null);
+    });
+    const udjson = localStorage.getItem("userData");
+    if(udjson != null){
+      console.log(udjson);
+      const obj = JSON.parse(udjson);
+      this.userData = obj;
+      if((this.userData.name != undefined)&&(this.userData.name != null)){
+        this.$text.value = this.userData.name;
+      }
+      if((this.userData.icon != undefined)&&(this.userData.icon != null)){
+        this.avatarStr = this.userData.icon;
+        this.#genIcon(this.avatarStr);
+      }else{
+        this.#genIcon(null);
+        this.userData.icon = this.avatarStr;
+      }
+    }else{
+      console.log("userData init");
+      this.userData = {userid:null,name:null,icon:null};
+      this.$text.value = "";
+    }
+    await this.update();
+  }
+  async update(){
+    const userdata = await this.#sendUserData(this.userData);
+    this.userData = userdata;
+    localStorage.setItem("userData", JSON.stringify(this.userData));
+    if(this.onUpdate != null){
+      const userData = this.getUserData();
+      this.onUpdate(userData);
+    }
   }
   hide(){
     this.dom.classList.add("hide");
@@ -166,18 +205,30 @@ class uiRegister{
   }
   show(){
     this.dom.classList.remove("hide");
+    if(this.$text.value.length > 0){
+      this.$commit.classList.remove("hide");
+    }else{
+      this.$commit.classList.add("hide");
+    }
     this.status = "show";
-    this.$commit.onclick = (()=>{
-
-      // todo; 保存処理を行う
-
-      this.startMessage();
+    this.$commit.onclick = (async ()=>{
+      let userData = {
+        userid:null,
+        name:this.$text.value,
+        icon:this.avatarStr
+      };
+      if(this.userData != null){
+        userData.userid = this.userData.userid;
+        this.userData.name = userData.name;
+        this.userData.icon = userData.icon;
+      }
+      await this.update();
+      this.#startMessage();
     });
-    this.genIcon();
     this.$random.onclick = (()=>{
-      const name = this.genRandomName();
+      const name = this.#genRandomName();
       this.$text.value = name;
-      this.genIcon();
+      this.#genIcon(null);
     });
     this.$text.oncompositionstart = ((e)=>{
       this.composing = true;
@@ -187,8 +238,10 @@ class uiRegister{
       sanitizeValue(e.target);
     });
     this.$text.oninput = ((e)=>{
-      if (!composing) {
-        sanitizeValue(e.target);
+      if(this.$text.value.length > 0){
+        this.$commit.classList.remove("hide");
+      }else{
+        this.$commit.classList.add("hide");
       }
     });
     function sanitizeValue(target){
@@ -199,14 +252,36 @@ class uiRegister{
       target.value = value;
     }
   }
-  startMessage(){
+  setOnUpdate(func){
+    this.onUpdate = func;
+  }
+  resetOnUpdate(){
+    this.onUpdate = null;
+  }
+  getUserData(){
+    let userdata = structuredClone(this.userData);
+    if(userdata != null){
+      userdata.iconSVG = this.iconSVG;
+    }
+    return userdata;
+  }
+  async #sendUserData(userData){
+    try {
+      const res = await this.socket.timeout(3000).emitWithAck("register", userData);
+      return res;
+    } catch (err) {
+      console.error("uiRegister.#sendUserData() server error = "+err);
+      return null;
+    }
+  }
+  #startMessage(){
     this.$result.classList.remove("hide");
     setTimeout(()=>{
       this.$result.classList.add("hide");
       this.hide();
     },3000);
   }
-  genRandomName(){
+  #genRandomName(){
     while (true) {
       const length = Math.floor(Math.random() * 4) + 3;
       let name = HIRAGANA_HEAD[Math.floor(Math.random() * HIRAGANA_HEAD.length)];
@@ -219,7 +294,7 @@ class uiRegister{
       return name;
     }
   }
-  genRandomString(length){
+  #genRandomString(length){
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?/`~";
     let result = "";
     for (let i = 0; i < length; i++) {
@@ -228,9 +303,14 @@ class uiRegister{
     }
     return result;
   }
-  genIcon(){
-    const str = this.genRandomString(10);
-    this.avatarStr = str;
+  #genIcon(_str){
+    let str;
+    if(_str == null){
+      str = this.#genRandomString(10);
+      this.avatarStr = str;
+    }else{
+      str = _str;
+    }
     const svg = avatar(str, { size: 128, backgroundColors: ['transparent'] ,blackout:false});
     this.$icon.innerHTML = svg;
     this.iconSVG = svg;

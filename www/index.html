@@ -132,14 +132,6 @@ html,body {
 .sound_off{
   background-color: white;
 }
-#bpmWrapper{
-  position: absolute;
-  top:50px;
-  left:10px;
-  width:100px;
-  height:20px;
-  display: flex;
-}
 .label{
   background-color: yellow;
   width:50px;
@@ -147,17 +139,8 @@ html,body {
   line-height: 20px;
   vertical-align: middle;
   text-align: center;
+  border-radius: 10px 0 0 10px;
 }
-#bpmValue{
-  background-color: #3300FF;
-  color:white;
-  width:50px;
-  height:20px;
-  line-height: 20px;
-  vertical-align: middle;
-  text-align: center;
-}
-
 #titleWrapper{
   position: absolute;
   top:10px;
@@ -193,27 +176,64 @@ html,body {
   background-size: contain;
   background-position: left;
 }
+#nameWrap{
+  position:absolute;
+  top:70px;
+  left:10px;
+  width:320px;
+  height:40px;
+  display: flex;
+  align-items:center;
+  cursor:pointer;
+  justify-content: flex-start;
+}
+#userName{
+  height:40px;
+  line-height: 40px;
+  vertical-align: middle;
+  text-align: center;
+  font-size:26px;
+  color:white;
+  padding-right:10px;
+}
+#userIcon{
+  width:40px;
+  height:40px;
+}
+#userScore{
+  height:30px;
+  min-width:20px;
+  background-color:white;
+  color:black;
+  line-height: 30px;
+  vertical-align: middle;
+  text-align: center;
+  padding:0px 20px;
+  border-radius: 20px;
+}
 #connectionWrap{
   position:absolute;
-  top:80px;
-  right:10px;
-  width:150px;
+  bottom:60px;
+  left:10px;
+  width:100px;
   height:20px;
   display: flex;
 }
 #connectionValue{
   background-color: white;
   color:black;
-  width:100px;
+  width:50px;
   height:20px;
-  line-height: 20px;
+  line-height:21px; /* ずれ対策 */
   vertical-align: middle;
   text-align: center;
+  font-size:16px;
+  border-radius:0 10px 10px 0;
 }
 #usersWrap{
   position:absolute;
-  top:110px;
-  right:10px;
+  bottom:90px;
+  left:10px;
   width:100px;
   height:20px;
   display: flex;
@@ -226,40 +246,7 @@ html,body {
   line-height: 20px;
   vertical-align: middle;
   text-align: center;
-}
-#inWrap{
-  position:absolute;
-  top:80px;
-  left:10px;
-  width:100px;
-  height:20px;
-  display: flex;
-}
-#inValue{
-  background-color: white;
-  color:black;
-  width:50px;
-  height:20px;
-  line-height: 20px;
-  vertical-align: middle;
-  text-align: center;
-}
-#goWrap{
-  position:absolute;
-  top:110px;
-  left:10px;
-  width:100px;
-  height:20px;
-  display: flex;
-}
-#goValue{
-  background-color: white;
-  color:black;
-  width:50px;
-  height:20px;
-  line-height: 20px;
-  vertical-align: middle;
-  text-align: center;
+  border-radius:0 10px 10px 0;
 }
 #push{
   position:absolute;
@@ -294,7 +281,7 @@ html,body {
   background-position: center;
 }
 .connected{
-  background-color: deeppink!important;
+  background-color: pink!important;
 }
 .unsupported{
   background-color: darkgray!important;
@@ -327,21 +314,18 @@ html,body {
   <div class="talogo"></div>
   <div id="titleWrapper">
   </div>
+  <div id="nameWrap">
+    <div id="userIcon"></div>
+    <p id="userName">無名ちゃん</p>
+    <p id="userScore">0 PT</p>
+  </div>
   <div id="connectionWrap">
     <div class="label">サーバ</div>
-    <div id="connectionValue">きれてる</div>
+    <div id="connectionValue">❌</div>
   </div>
   <div id="usersWrap">
     <div class="label">ゲスト</div>
     <div id="usersValue">0</div>
-  </div>
-  <div id="inWrap">
-    <div class="label">キタ</div>
-    <div id="inValue">0</div>
-  </div>
-  <div id="goWrap">
-    <div class="label">出た</div>
-    <div id="goValue">0</div>
   </div>
   <div id="push">飛ばす!</div>
   <div id="register" class="hide"></div>
@@ -373,12 +357,13 @@ const $icon = document.head.querySelector('link[rel="icon"]');
 const $logo = document.querySelector(".logo");
 const $dpig = document.querySelector("#dpig");
 const $usersValue = document.querySelector("#usersValue");
-const $inValue = document.querySelector("#inValue");
-const $goValue = document.querySelector("#goValue");
+
+const $nameWrap = document.querySelector("#nameWrap");
+const $userIcon = document.querySelector("#userIcon");
+const $userName = document.querySelector("#userName");
+const $userScore = document.querySelector("#userScore");
 
 let param = location.search;
-let inCnt = 0;
-let goCnt = 0;
 
 $start.onclick = async (e) => {
   $outer.classList.add("hide");
@@ -398,15 +383,12 @@ document.onvisibilitychange = async (e) =>{
 let animTimer = null;
 const ANIM_TIME = 1000;
 
-$push.onmousedown = $push.ontouchstart = (e) =>{
+$push.onmousedown = $push.ontouchstart = async (e) =>{
   e.preventDefault();
   $push.classList.add("connected");
-
-  let _index = Math.floor(Math.random() * 3);
-
-  socket.emit("push",_index);
-  goCnt ++;
-  $goValue.innerHTML = goCnt;
+  let _index = Math.floor(Math.random() * 8);
+  let score = await socket.emitWithAck("push",_index);
+  $userScore.innerHTML = score.score+" PT";
   startAnim(_index);
 };
 
@@ -503,21 +485,22 @@ import {io} from "./libs/socket.io.esm.min.js";
 
 const socket = io({transports:["websocket"],path:"/ws"});
 
-socket.on("connect", () => {
+socket.on("connect", async () => {
   console.log("socket connected :"+socket.id);
-  $connectionValue.innerHTML = "つながってる";
+  $connectionValue.innerHTML = "⭕️";
   socket.emit("client","kuso");
+  $connectionValue.classList.add("connected");
+  await uireg.update();
 });
 
 socket.on("disconnect", () => {
   console.log("socket disconnected");
-  $connectionValue.innerHTML = "きれてる";
+  $connectionValue.innerHTML = "❌";
+  $connectionValue.classList.remove("connected");
 });
 
 socket.on("push", (index)=>{
   console.log("push received!");
-  inCnt ++;
-  $inValue.innerHTML = inCnt;
   startAnim(index);
 });
 
@@ -536,12 +519,43 @@ $loadingAnim.classList.add("hide");
 
 ///////////////////////////////////////////////////////////////////////
 // Register UI
-import uiReg from "./popup/ui-register.mjs";
+import uiReg from "./ui/ui-register.mjs";
 const $reg = document.querySelector("#register");
 const uireg = new uiReg($reg,socket);
-uireg.init();
+await uireg.init();
+uireg.setOnUpdate(onUpdate);
 
-uireg.show(); // for Testing
+let userData = uireg.getUserData();
+showUserName(userData);
+console.dir(userData);
+
+function showUserName(ud){
+  if((ud == null)||(ud.userid == null)||(ud.name == null)){
+    uireg.show();
+  }else{
+    $userIcon.innerHTML = ud.iconSVG;
+    const $svg = $userIcon.children[0];
+    $svg.style.width = "40px";
+    $svg.style.height = "40px";
+    $userName.innerHTML = ud.name;
+    $userScore.innerHTML = ud.score+" PT";
+  }
+}
+
+function onUpdate(ud){
+  userData = ud;
+  showUserName(ud);
+}
+
+$nameWrap.onclick = (()=>{
+  uireg.show();
+});
+
+///////////////////////////////////////////////////////////////////////
+// Ranking UI
+import uiRank from "./ui/ui-ranking.mjs";
+const uirank = new uiRank($main,socket);
+await uirank.init();
 
 </script>  
 </body>

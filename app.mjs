@@ -62,6 +62,9 @@ let clients = {};   // clientの一覧を管理するMAP      key = socket.id
 let masters = {};   // masterの一覧を管理するMAP      key = socket.id
 let users = {};     // userの一覧を管理するMAP        key = userid
 
+let userRanking = [];    // userランキングの集計用 (30分リングバッファ)
+let masterRanking = [];  // masterスコアの集計用 (実質masterは1つなのでどっちかというと履歴用)
+
 function runSocketServer(){
   io = new Server(webServer, {path:"/ws"});
   io.on("connection",(socket)=>{
@@ -69,29 +72,45 @@ function runSocketServer(){
 
     cons[socket.id] = {id:socket.id};
 
-    socket.on("register",(data)=>{
+    socket.on("register",(data,callback)=>{
+      console.log("register=");
+      console.dir(data);
       log("register : "+socket.id);
       let userid = null;
       if(data.userid == null){ // new user
-        // todo: create userid 
-        // userid = xxxx
-        io.to(socket.id).emit("newuserid",{userid:userid});
+        userid = genUserId();
       }else{
         if(data.userid in users){
           // overwrite user data
           userid = data.userid;
         }else{
-          // invalid userid
           console.log("invalid user id : "+data.userid);
+          userid = genUserId();
         }
       }
-      if(userid != null){
-        clients[socket.id] = {userid:userid};
-        users[userid] = {name:data.name, icon:data.icon};
-        let len = Object.keys(clients).length;
-        for(let key in clients){
-          io.to(key).emit("clients",len);
-        }
+      clients[socket.id] = {userid:userid};
+      if(!(userid in users)){
+        users[userid] = {};
+      }
+      if(data.name != null){
+        users[userid].name = data.name;
+      }
+      if(data.icon != null){
+        users[userid].icon = data.icon;
+      }
+      if(users[userid].score == undefined || users[userid].score == null){
+        users[userid].score = 0;
+      }
+      callback({
+        ok:true,
+        userid:userid,
+        name:users[userid].name,
+        icon:users[userid].icon,
+        score:users[userid].score
+      });
+      let len = Object.keys(clients).length;
+      for(let key in clients){
+        io.to(key).emit("clients",len);
       }
     });
 
@@ -100,16 +119,18 @@ function runSocketServer(){
       masters[socket.id] = {id:socket.id};
     });
 
-    socket.on("push",(data)=>{
+    socket.on("push",(data,callback)=>{
       log("push : "+data);
+      let score = null;
       if(socket.id in masters){
         console.log("push from master.");
         // ToDo score 更新処理
       }else{
         if(socket.id in clients){
-          console.log("push from client.");
-          // ToDo score 更新処理
-          let len = Object.keys(users).length;
+          let userid = clients[socket.id].userid;
+          console.log("push from client. userid="+userid);
+          users[userid].score = users[userid].score + calcScore(Number(data));
+          score = users[userid].score;
           for(let key in masters){
             io.to(key).emit("push",data);
           }
@@ -117,7 +138,10 @@ function runSocketServer(){
           console.log("push from unregisterd user.");
         }
       }
+      console.log("score="+score);
+      callback({ok:true,score:score});
     });
+
     socket.on("disconnect",(data)=>{
       log("disconnected : "+socket.id);
       let user = cons[socket.id].user;
@@ -134,4 +158,42 @@ function runSocketServer(){
       }
     });
   });
+}
+
+function genUserId(){
+  while(true){
+    let id = generateId(8);
+    if(id in users){
+      continue;
+    }
+    return(id);
+  }
+}
+
+function generateId(length = 8) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&_.";
+
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    const idx = Math.floor(Math.random() * chars.length);
+    result += chars[idx];
+  }
+  return result;
+}
+
+function calcScore(num){
+  let score = 0;
+  switch(num){
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  case 7:
+    score = 5+Math.floor(Math.random()*5);
+    break;
+  }
+  return score;
 }
