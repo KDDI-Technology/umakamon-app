@@ -40,7 +40,7 @@ const html = `
   position:absolute;
   top:0px;
   right:10px;
-  width:100px;
+  width:20px;
   hheight:20px;
   vertical-align:middle;
   line-height:20px;
@@ -127,7 +127,7 @@ const html = `
 <div id="uiRankWrap" class="hide">
   <div id="uiRankHeader">
     <div id="uiRankHeaderTitle">過去30分トップ3 あなたは<span id="myRank"></span>位です。</div>
-    <div id="uiRankUpdateTicker" class="hide">Update!</div>
+    <div id="uiRankUpdateTicker" class="hide"></div>
   </div>
   <div id="uiRankBody"></div>
 </div>
