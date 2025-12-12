@@ -233,6 +233,11 @@ class uiRegister{
       const name = this.#genRandomName();
       this.$text.value = name;
       this.#genIcon(null);
+      if(this.$text.value.length > 0){
+        this.$commit.classList.remove("hide");
+      }else{
+        this.$commit.classList.add("hide");
+      }
     });
     this.$text.oncompositionstart = ((e)=>{
       this.composing = true;
