@@ -529,8 +529,8 @@ socket.on("push", (index)=>{
   startAnim(index);
 });
 
-socket.on("users", (num)=>{
-  console.log("users="+num);
+socket.on("clients", (num)=>{
+  console.log("clients="+num);
   $usersValue.innerHTML = num - 1;
 });
 
