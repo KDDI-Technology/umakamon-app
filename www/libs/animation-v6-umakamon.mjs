@@ -145,6 +145,8 @@ class animation{
       let spr = new PIXI.Sprite(tex);
       spr.anchor.x = 0.5;
       spr.anchor.y = 0.5;
+      spr.scale.x = 0.5;
+      spr.scale.y = 0.5;
       this.faceSpr.push(spr);
     }
   }
@@ -167,8 +169,8 @@ class animation{
   removeFace(){
     if(this.nowFaceIdx != null){
       this.faceSpr[this.nowFaceIdx].rotation = 0;
-      this.faceSpr[this.nowFaceIdx].scale.x = 1;
-      this.faceSpr[this.nowFaceIdx].scale.y = 1;
+      this.faceSpr[this.nowFaceIdx].scale.x = 0.5;
+      this.faceSpr[this.nowFaceIdx].scale.y = 0.5;
       this.faceContainer.removeChildren();
       this.nowFaceIdx = null;
     }
