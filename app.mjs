@@ -129,7 +129,7 @@ function runSocketServer(){
         icon:users[userid].icon,
         score:users[userid].score
       });
-      let len = Object.keys(clients).length;
+      let len = getUserNum();
       for(let key in clients){
         io.to(key).emit("clients",len);
       }
@@ -302,4 +302,13 @@ function broadcast30minRanking() {
     };
     io.to(socketid).emit("rankingUpdate",payload);
   }
+}
+
+function getUserNum(){
+  let users = {};
+  for(let sid in clients){
+    const userid = clients[sid].userid;
+    users[userid] = userid;
+  }
+  return Object.keys(users).length;
 }
