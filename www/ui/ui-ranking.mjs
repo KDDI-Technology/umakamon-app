@@ -41,7 +41,7 @@ const html = `
   top:0px;
   right:10px;
   width:20px;
-  hheight:20px;
+  height:20px;
   vertical-align:middle;
   line-height:20px;
   text-align:center;
