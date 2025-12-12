@@ -38,6 +38,9 @@ html,body {
 #pixi_wrapper{
   width: 100%;
   height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 .c1{
   margin-top:60px;
@@ -386,7 +389,7 @@ const ANIM_TIME = 1000;
 $push.onmousedown = $push.ontouchstart = async (e) =>{
   e.preventDefault();
   $push.classList.add("connected");
-  let _index = Math.floor(Math.random() * 8);
+  let _index = Math.floor(Math.random() * 9);
   let score = await socket.emitWithAck("push",_index);
   $userScore.innerHTML = score.score+" PT";
   startAnim(_index);
@@ -509,14 +512,6 @@ socket.on("users", (num)=>{
   $usersValue.innerHTML = num - 1;
 });
 
-
-///////////////////////////////////////////////////////////////////////
-// Loading Completed
-
-$loading.innerHTML = "ロードがおわりました！ <br>下のボタンを押してね！ ↓↓↓";
-$start.classList.remove("hide");
-$loadingAnim.classList.add("hide");
-
 ///////////////////////////////////////////////////////////////////////
 // Register UI
 import uiReg from "./ui/ui-register.mjs";
@@ -556,6 +551,21 @@ $nameWrap.onclick = (()=>{
 import uiRank from "./ui/ui-ranking.mjs";
 const uirank = new uiRank($main,socket);
 await uirank.init();
+
+///////////////////////////////////////////////////////////////////////
+// bg image loader
+import bgimage from "./ui/bgimageloader.mjs";
+const imgLoader = new bgimage($pixi_wrapper);
+await imgLoader.load();
+
+///////////////////////////////////////////////////////////////////////
+// Loading Completed
+
+$loading.innerHTML = "ロードがおわりました！ <br>下のボタンを押してね！ ↓↓↓";
+$start.classList.remove("hide");
+$loadingAnim.classList.add("hide");
+
+
 
 </script>  
 </body>

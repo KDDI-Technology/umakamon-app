@@ -164,7 +164,7 @@ class uiRegister{
     });
     const udjson = localStorage.getItem("userData");
     if(udjson != null){
-      console.log(udjson);
+      console.dir(udjson);
       const obj = JSON.parse(udjson);
       this.userData = obj;
       if((this.userData.name != undefined)&&(this.userData.name != null)){

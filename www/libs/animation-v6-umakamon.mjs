@@ -17,7 +17,8 @@ const faces = [
   './img/nagasaki/5.png',
   './img/nagasaki/6.png',
   './img/nagasaki/7.png',
-  './img/nagasaki/8.png'
+  './img/nagasaki/8.png',
+  './img/nagasaki/9.png'
 ];
 
 const BG_LINES = 48;
