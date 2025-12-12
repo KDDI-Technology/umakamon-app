@@ -216,7 +216,7 @@ html,body {
 }
 #connectionWrap{
   position:absolute;
-  bottom:60px;
+  bottom:90px;
   left:10px;
   width:100px;
   height:20px;
@@ -235,7 +235,7 @@ html,body {
 }
 #usersWrap{
   position:absolute;
-  bottom:90px;
+  bottom:120px;
   left:10px;
   width:100px;
   height:20px;
@@ -274,7 +274,7 @@ html,body {
 }
 .kteclogo{
   position:absolute;
-  bottom:10px;
+  bottom:40px;
   left:10px;
   width:80px;
   height:40px;
@@ -301,6 +301,21 @@ html,body {
   left: 0;
   z-index: 10;
 }
+#photocredit{
+  position:absolute;
+  width:120px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+  bottom:10px;
+  left:10px;
+  background-color:darkgray;
+  color:black;
+  font-size:9px;
+  font-family: 'sans-serif';
+  border-radius: 10px;
+}
 
 @media screen and (min-width: 481px) {
 
@@ -320,7 +335,7 @@ html,body {
   <div id="nameWrap">
     <div id="userIcon"></div>
     <p id="userName">無名ちゃん</p>
-    <p id="userScore">0 PT</p>
+    <!--<p id="userScore">0 PT</p>-->
   </div>
   <div id="connectionWrap">
     <div class="label">サーバ</div>
@@ -343,6 +358,7 @@ html,body {
     <a href="https://kddi-tech.com/" target="_blank"><div class="kteclogo"></div></a>
   </div>
   <a href="https://kddi-tech.com/" target="_blank"><div class="kteclogo"></div></a>
+  <a href="https://www.nagasaki-tabinet.com" target="_blank"><div id="photocredit">写真提供 ©長崎県観光連盟</div></a>
 </div>
 <script type="module">
 const $start = document.querySelector('#start');
@@ -364,7 +380,7 @@ const $usersValue = document.querySelector("#usersValue");
 const $nameWrap = document.querySelector("#nameWrap");
 const $userIcon = document.querySelector("#userIcon");
 const $userName = document.querySelector("#userName");
-const $userScore = document.querySelector("#userScore");
+//const $userScore = document.querySelector("#userScore");
 
 let param = location.search;
 
@@ -391,7 +407,7 @@ $push.onmousedown = $push.ontouchstart = async (e) =>{
   $push.classList.add("connected");
   let _index = Math.floor(Math.random() * 9);
   let score = await socket.emitWithAck("push",_index);
-  $userScore.innerHTML = score.score+" PT";
+//  $userScore.innerHTML = score.score+" PT";
   startAnim(_index);
 };
 
@@ -533,7 +549,7 @@ function showUserName(ud){
     $svg.style.width = "40px";
     $svg.style.height = "40px";
     $userName.innerHTML = ud.name;
-    $userScore.innerHTML = ud.score+" PT";
+//    $userScore.innerHTML = ud.score+" PT";
   }
 }
 
