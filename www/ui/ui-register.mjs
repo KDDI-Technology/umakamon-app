@@ -163,7 +163,7 @@ class uiRegister{
       this.#genIcon(null);
     });
     const udjson = localStorage.getItem("userData");
-    if(udjson != null){
+    if((udjson != null)&&(udjson != 'null')){
       console.dir(udjson);
       const obj = JSON.parse(udjson);
       this.userData = obj;
