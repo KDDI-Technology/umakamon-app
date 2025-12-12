@@ -16,21 +16,37 @@ const html = `
   padding:10px;
   display:flex;
   flex-direction:column;
+  justify-content:flex-start;
   color:white;
   box-sizing:border-box;
 }
 #uiRankHeader{
   position:relative;
   width:100%;
-  height:20px;
+  height:40px;
   display:flex;
-  margin-bottom:10px;
+  line-height:40px;
+  padding:0px 10px;
+  vertical-align:middle;
   box-sizing:border-box;
+  border-radius:20px 20px 0px 0px;
+  background-color:rgba(0,0,0,0.5);
+}
+#uiRankBottom{
+  position:relative;
+  width:100%;
+  height:40px;
+  line-height:40px;
+  vertical-align:middle;
+  padding:0px 10px;
+  display:flex;
+  box-sizing:border-box;
+  border-radius:0px 0px 20px 20px;
+  background-color:rgba(0,0,0,0.5);
 }
 #uiRankBody{
-  padding:10px 0px;
+  padding:0px 0px;
   width:100%;
-  height:calc(100% - 20px);
   box-sizing:border-box;
 }
 #uiRankHeaderTitle{
@@ -38,7 +54,7 @@ const html = `
 }
 #uiRankUpdateTicker{
   position:absolute;
-  top:0px;
+  top:10px;
   right:10px;
   width:20px;
   height:20px;
@@ -71,7 +87,7 @@ const html = `
 }
 .uiRankName{
   height:20px;
-  min-width:90px;
+  width:120px;
   margin-right:5px;
   line-height:20px;
   font-size:16px;
@@ -79,7 +95,7 @@ const html = `
 }
 .uiRankScore{
   height:20px;
-  min-width:60px;
+  width:100px;
   text-align:right;
 }
 #uiRankToggle{
@@ -101,12 +117,13 @@ const html = `
   display:none!important;
 }
 .RkShow{
-  margin-top:110px;
-  width:100%!important;
+  margin-top:60px;
+  width:280px!important;
   height:140px!important; 
 }
 .uiRankRank{
   width:20px;
+  height:20px;
   text-align:center;
   margin-right:5px;
   line-height:20px;
@@ -115,7 +132,10 @@ const html = `
 }
 #myRank{
   padding:0px 10px;
-  margin:0px 5px;
+  height:20px;
+  margin:10px;
+  line-height:20px;
+  vertical-align:middle;
   display:inline-box;
   border-radius:10px;
   text-align:center;
@@ -126,10 +146,11 @@ const html = `
 <slot></slot>
 <div id="uiRankWrap" class="hide">
   <div id="uiRankHeader">
-    <div id="uiRankHeaderTitle">過去30分トップ3 あなたは<span id="myRank"></span>位です。</div>
+    <div id="uiRankHeaderTitle">過去30分トップ3</div>
     <div id="uiRankUpdateTicker" class="hide"></div>
   </div>
   <div id="uiRankBody"></div>
+  <div id="uiRankBottom">あなたは<span id="myRank"></span>位です。</div>
 </div>
 <div id="uiRankToggle"></div>
 `;
