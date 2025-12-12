@@ -126,7 +126,7 @@ const html = `
 <slot></slot>
 <div id="uiRankWrap" class="hide">
   <div id="uiRankHeader">
-    <div id="uiRankHeaderTitle">過去30分トップ3 あなたの順位は<span id="myRank"></span>位です。</div>
+    <div id="uiRankHeaderTitle">過去30分トップ3 あなたは<span id="myRank"></span>位です。</div>
     <div id="uiRankUpdateTicker" class="hide">Update!</div>
   </div>
   <div id="uiRankBody"></div>
