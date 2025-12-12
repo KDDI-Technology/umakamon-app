@@ -182,7 +182,7 @@ function runSocketServer(){
       delete cons[socket.id];
       if(socket.id in clients){
         delete clients[socket.id];
-        let len = Object.keys(clients).length;
+        let len = getUserNum();
         for(let key in clients){
           io.to(key).emit("clients",len);
         }
