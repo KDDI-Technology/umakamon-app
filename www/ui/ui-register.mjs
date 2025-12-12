@@ -185,12 +185,16 @@ class uiRegister{
     await this.update();
   }
   async update(){
-    const userdata = await this.#sendUserData(this.userData);
-    this.userData = userdata;
-    localStorage.setItem("userData", JSON.stringify(this.userData));
-    if(this.onUpdate != null){
-      const userData = this.getUserData();
-      this.onUpdate(userData);
+    if(this.userData != null){
+      const userdata = await this.#sendUserData(this.userData);
+      this.userData = userdata;
+      localStorage.setItem("userData", JSON.stringify(this.userData));
+      if(this.onUpdate != null){
+        const userData = this.getUserData();
+        this.onUpdate(userData);
+      }
+    }else{
+      console.log("userData is null");
     }
   }
   hide(){

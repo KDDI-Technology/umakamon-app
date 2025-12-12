@@ -74,7 +74,7 @@ let masterRanking = [];  // masterスコアの集計用 (実質masterは1つな�
 function runSocketServer(){
   io = new Server(webServer, {path:"/ws"});
   io.on("connection",(socket)=>{
-    console.log("new connection : "+socket.id);
+    log("new connection : "+socket.id);
 
     cons[socket.id] = {id:socket.id};
 
