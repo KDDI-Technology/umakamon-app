@@ -140,4 +140,4 @@ vite.config.ts.timestamp-*
 
 .DS_Store
 /www/libs/font.spicy-sweet.com/
-
+.env

@@ -6,22 +6,22 @@ import Posmp from "./posmp2.mjs";
 const DEB = false;
 
 const samples = [
-  "../wav/colab/1.wav",
-  "../wav/colab/2.wav",
-  "../wav/colab/3.wav",
-  "../wav/colab/4.wav",
-  "../wav/colab/5.wav",
-  "../wav/colab/6.wav",
-  "../wav/colab/7.wav",
-  "../wav/colab/8.wav",
-  "../wav/colab/9.wav",
-  "../wav/colab/10.wav",
-  "../wav/colab/11.wav",
-  "../wav/colab/12.wav",
-  "../wav/colab/13.wav",
-  "../wav/colab/14.wav",
-  "../wav/colab/15.wav",
-  "../wav/colab/16.wav"
+  "/wav/colab/1.wav",
+  "/wav/colab/2.wav",
+  "/wav/colab/3.wav",
+  "/wav/colab/4.wav",
+  "/wav/colab/5.wav",
+  "/wav/colab/6.wav",
+  "/wav/colab/7.wav",
+  "/wav/colab/8.wav",
+  "/wav/colab/9.wav",
+  "/wav/colab/10.wav",
+  "/wav/colab/11.wav",
+  "/wav/colab/12.wav",
+  "/wav/colab/13.wav",
+  "/wav/colab/14.wav",
+  "/wav/colab/15.wav",
+  "/wav/colab/16.wav"
 ];
 
 const VELOCITY = 1.4;

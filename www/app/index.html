@@ -1,0 +1,594 @@
+<!doctype html>
+<!--
+index.html
+umakamon-app
+(c)2025 by KDDI Technology
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light">
+<meta name="description" content="うまかもん！">
+<link rel="apple-touch-icon" type="image/png" href="/img/apple-touch-icon-180x180.png">
+<link rel="icon" type="image/png" href="/img/umakamon-192x192.png">
+<title>うまかもん！</title>
+<style>
+@font-face {
+  font-family: 'KTEGAKI';
+  src: url('/libs/font.spicy-sweet.com/KTEGAKI.ttf') format('truetype');
+}
+*{
+  margin:0px;
+  padding:0px;
+  box-sizing: border-box;
+  font-family: 'KTEGAKI';
+}
+html,body {
+  height: 100%;
+  margin: 0;
+  background-color: black;
+  overflow:hidden;
+}
+#main{
+  position:relative;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+#pixi_wrapper{
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.c1{
+  margin-top:60px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 180px;
+  background-image: url("/img/umakamon-logo.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+.c2{
+  box-sizing: border-box;
+  width: 100%;
+  height: 128px;
+}
+#loading{
+  font-size: 20px;
+  text-align:center;
+  display:inline-block;
+  width:100%;
+  height:48px;
+  color:white;
+}
+#dpig{
+  background-image: url("/img/nagasaki/1.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+#outer{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top: 0;
+  left: 0;
+  background-color:black;
+  z-index: 10;
+}
+#fv{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  height:calc(100% - 80px);
+}
+
+#start{
+  text-align:center;
+  display:inline-block;
+  width:240px;
+  height:60px;
+  font-size: 32px;
+  line-height: 60px;
+  vertical-align: center;
+  color:black;
+  background-color: pink;
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;  
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  border-radius:60px;
+}
+.hide{
+  display: none!important;
+}
+
+#ai{
+  position: absolute;
+  bottom: 20px;
+  left: 10px;
+  width: 100px;
+  height: 40px;
+  font-size: 16px;
+  line-height: 40px;
+  text-align: center;
+  vertical-align: center;
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;  
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.sound_on{
+  background-color: yellow;
+}
+.sound_off{
+  background-color: white;
+}
+.label{
+  background-color: yellow;
+  width:50px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+  border-radius: 10px 0 0 10px;
+}
+#titleWrapper{
+  position: absolute;
+  top:5px;
+  left:10px;
+  width:110px;
+  height:50px;
+  display: flex;  
+  background-image:url(/img/umakamon-logo.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+.logo{
+  width:30px;
+  height:30px;
+  background-image:url(/img/umakamon-192x192.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+#title{
+  width:110px;
+  height:30px;
+  line-height: 30px;
+  vertical-align: middle;
+  padding-left:5px;
+}
+#loadingAnim{
+  width:100%;
+  height:40px;
+  background-image:url(/img/trim2.gif);
+  background-repeat: repeat-x;
+  background-size: contain;
+  background-position: left;
+}
+#nameWrap{
+  position:absolute;
+  top:10px;
+  left:125px;
+  min-width:100px;
+  height:40px;
+  display: flex;
+  align-items:center;
+  cursor:pointer;
+  justify-content: flex-start;
+  background-color:rgba(0,0,0,0.6);
+  border-radius: 20px;
+}
+#userName{
+  position:relative;
+  height:40px;
+  line-height: 40px;
+  vertical-align: middle;
+  text-align: center;
+  font-size:18px;
+  color:white;
+  padding:0px 10px;
+}
+#userIcon{
+  width:40px;
+  height:40px;
+  padding:0px 5px;
+}
+#userScore{
+  height:30px;
+  min-width:20px;
+  background-color:white;
+  color:black;
+  line-height: 30px;
+  vertical-align: middle;
+  text-align: center;
+  padding:0px 20px;
+  border-radius: 20px;
+}
+#connectionWrap{
+  position:absolute;
+  bottom:90px;
+  left:10px;
+  width:100px;
+  height:20px;
+  display: flex;
+}
+#connectionValue{
+  background-color: white;
+  color:black;
+  width:50px;
+  height:20px;
+  line-height:21px; /* ずれ対策 */
+  vertical-align: middle;
+  text-align: center;
+  font-size:16px;
+  border-radius:0 10px 10px 0;
+}
+#usersWrap{
+  position:absolute;
+  bottom:120px;
+  left:10px;
+  width:100px;
+  height:20px;
+  display: flex;
+}
+#usersValue{
+  background-color: white;
+  color:black;
+  width:50px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+  border-radius:0 10px 10px 0;
+}
+#push{
+  position:absolute;
+  bottom:-40px;
+  right:-40px;
+  width:240px;
+  height:240px;
+  border-radius: 120px;
+  background-color:pink;
+  font-size:64px;
+  line-height: 220px;
+  text-align: center;
+  vertical-align: middle;
+  transform:rotate(-45deg);
+  cursor: pointer;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;  
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.kteclogo{
+  position:absolute;
+  bottom:10px;
+  left:10px;
+  width:80px;
+  height:40px;
+  background-image:url(/img/logo-ktec-512x256.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+.connected{
+  background-color: pink!important;
+}
+.unsupported{
+  background-color: darkgray!important;
+}
+.supported{
+  background-color: pink!important;
+  color:black!important;
+}
+#register{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+#photocredit{
+  position:absolute;
+  width:120px;
+  height:20px;
+  line-height: 20px;
+  vertical-align: middle;
+  text-align: center;
+  bottom:60px;
+  left:10px;
+  background-color:darkgray;
+  color:black;
+  font-size:9px;
+  font-family: 'sans-serif';
+  border-radius: 10px;
+}
+
+@media screen and (min-width: 481px) {
+
+} /* @Media */
+@media screen and (max-width: 480px) {
+
+} /* @Media */
+
+</style>
+</head>
+<body>
+<div id="main">
+  <div id="pixi_wrapper"></div>
+  <div class="talogo"></div>
+  <div id="titleWrapper">
+  </div>
+  <div id="nameWrap">
+    <div id="userIcon"></div>
+    <p id="userName">無名ちゃん</p>
+    <!--<p id="userScore">0 PT</p>-->
+  </div>
+  <div id="connectionWrap">
+    <div class="label">サーバ</div>
+    <div id="connectionValue">❌</div>
+  </div>
+  <div id="usersWrap">
+    <div class="label">ゲスト</div>
+    <div id="usersValue">0</div>
+  </div>
+  <div id="push">飛ばす!</div>
+  <div id="register" class="hide"></div>
+  <div id="outer">
+    <div id="fv">
+      <div class="c1" id="dtitle"></div>
+      <div class="c2" id="dpig"></div>
+      <div id="loading">Now Loading....</div>
+      <div id="loadingAnim"></div>
+      <div id="start" class="hide">スタート</div>
+    </div>
+    <a href="https://kddi-tech.com/" target="_blank"><div class="kteclogo"></div></a>
+  </div>
+  <a href="https://kddi-tech.com/" target="_blank"><div class="kteclogo"></div></a>
+  <a href="https://www.nagasaki-tabinet.com" target="_blank"><div id="photocredit">写真提供 ©長崎県観光連盟</div></a>
+</div>
+<script type="module">
+const $start = document.querySelector('#start');
+const $push = document.querySelector('#push');
+const $outer = document.querySelector('#outer');
+const $pixi_wrapper = document.querySelector('#pixi_wrapper');
+const $loading = document.querySelector('#loading');
+const $loadingAnim = document.querySelector('#loadingAnim');
+const $main = document.querySelector('#main');
+const $connectionValue = document.querySelector('#connectionValue');
+const $dtitle = document.querySelector('#dtitle');
+
+const $appleIcon = document.head.querySelector('link[rel="apple-touch-icon"]');
+const $icon = document.head.querySelector('link[rel="icon"]');
+const $logo = document.querySelector(".logo");
+const $dpig = document.querySelector("#dpig");
+const $usersValue = document.querySelector("#usersValue");
+
+const $nameWrap = document.querySelector("#nameWrap");
+const $userIcon = document.querySelector("#userIcon");
+const $userName = document.querySelector("#userName");
+//const $userScore = document.querySelector("#userScore");
+
+let param = location.search;
+
+$start.onclick = async (e) => {
+  $outer.classList.add("hide");
+  playEfx();
+  await requestWakeLock();
+};
+
+document.onvisibilitychange = async (e) =>{
+  if(document.visibilityState == "hidden"){
+  }else if(document.visibilityState === 'visible'){
+  	if (wakeLock !== null){
+      await requestWakeLock();
+  	}
+  }
+}
+
+let animTimer = null;
+const ANIM_TIME = 1000;
+
+$push.onmousedown = $push.ontouchstart = async (e) =>{
+  e.preventDefault();
+  $push.classList.add("connected");
+  let _index = Math.floor(Math.random() * 9);
+  let score = await socket.emitWithAck("push",_index);
+//  $userScore.innerHTML = score.score+" PT";
+  startAnim(_index);
+};
+
+function startAnim(_index){
+  if(animTimer != null){
+    clearTimeout(animTimer);
+    anim.removeFace();
+  }
+  let sindex = Math.floor(Math.random() * 16);
+  smp2.play(null,sindex,1);
+  anim.startBgLines();
+  anim.addFace(_index);
+  animTimer = setTimeout((e)=>{
+    anim.stopBgLines();
+    anim.removeFace();
+    animTimer = null;
+  },ANIM_TIME);
+}
+
+$push.onmouseup = $push.ontouchend = (e) =>{
+  console.log("push mousedown");
+  e.preventDefault();
+  $push.classList.remove("connected");
+};
+
+///////////////////////////////////////////////////////////////////////
+// UI Efx
+import posmp from "/libs/posmp2.mjs";
+
+const sampler = new posmp();
+await sampler.init("/wav/efx1.wav").catch((err)=>null);
+
+function playEfx(num){
+  sampler.play();
+}
+
+import smp from "/libs/colabPlayer.mjs";
+let ac = new AudioContext();
+const smp2 = new smp(ac);
+await smp2.load();
+
+
+///////////////////////////////////////////////////////////////////////
+// screen wake lock
+let wakeLock = null;
+
+const requestWakeLock = async () => {
+  try {
+    if(wakeLock != null){
+      if(wakeLock.released == false){
+        return;
+      }
+    }
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      console.log('Screen Wake Lock was released');
+    });
+    console.log('Screen Wake Lock is active');
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+};
+
+await requestWakeLock();
+
+///////////////////////////////////////////////////////////////////////
+// animation
+
+import animation from "/libs/animation-v6-umakamon.mjs";
+
+const anim = new animation();
+anim.init($pixi_wrapper);
+
+window.addEventListener('resize', ()=>{
+  const width = $main.getBoundingClientRect().width;
+  const height = $main.getBoundingClientRect().height;
+  anim.resize(width, height);
+});
+
+const observer = new MutationObserver(() => {
+  const width = $main.getBoundingClientRect().width;
+  const height = $main.getBoundingClientRect().height;
+  anim.resize(width, height);
+});
+observer.observe($main, {
+  attriblutes: true,
+  attributeFilter: ["style"]
+});
+
+
+///////////////////////////////////////////////////////////////////////
+// WebSocket
+import {io} from "/libs/socket.io.esm.min.js";
+
+const socket = io({transports:["websocket"],path:"/ws"});
+
+socket.on("connect", async () => {
+  console.log("socket connected :"+socket.id);
+  $connectionValue.innerHTML = "⭕️";
+  socket.emit("client","kuso");
+  $connectionValue.classList.add("connected");
+  await uireg.update();
+});
+
+socket.on("disconnect", () => {
+  console.log("socket disconnected");
+  $connectionValue.innerHTML = "❌";
+  $connectionValue.classList.remove("connected");
+});
+
+socket.on("push", (index)=>{
+  console.log("push received!");
+  startAnim(index);
+});
+
+socket.on("users", (num)=>{
+  console.log("users="+num);
+  $usersValue.innerHTML = num - 1;
+});
+
+///////////////////////////////////////////////////////////////////////
+// Register UI
+import uiReg from "./ui/ui-register.mjs";
+const $reg = document.querySelector("#register");
+const uireg = new uiReg($reg,socket);
+await uireg.init();
+uireg.setOnUpdate(onUpdate);
+
+let userData = uireg.getUserData();
+showUserName(userData);
+console.dir(userData);
+
+function showUserName(ud){
+  if((ud == null)||(ud.userid == null)||(ud.name == null)){
+    uireg.show();
+  }else{
+    $userIcon.innerHTML = ud.iconSVG;
+    const $svg = $userIcon.children[0];
+    $svg.style.width = "40px";
+    $svg.style.height = "40px";
+    $userName.innerHTML = ud.name;
+//    $userScore.innerHTML = ud.score+" PT";
+  }
+}
+
+function onUpdate(ud){
+  userData = ud;
+  showUserName(ud);
+}
+
+$nameWrap.onclick = (()=>{
+  uireg.show();
+});
+
+///////////////////////////////////////////////////////////////////////
+// Ranking UI
+import uiRank from "./ui/ui-ranking.mjs";
+const uirank = new uiRank($main,socket);
+await uirank.init();
+
+///////////////////////////////////////////////////////////////////////
+// bg image loader
+import bgimage from "./ui/bgimageloader.mjs";
+const imgLoader = new bgimage($pixi_wrapper);
+await imgLoader.load();
+
+///////////////////////////////////////////////////////////////////////
+// Loading Completed
+
+$loading.innerHTML = "ロードがおわりました！ <br>下のボタンを押してね！ ↓↓↓";
+$start.classList.remove("hide");
+$loadingAnim.classList.add("hide");
+
+
+
+</script>  
+</body>
+</html>

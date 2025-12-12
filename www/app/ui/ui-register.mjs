@@ -3,7 +3,7 @@
 // (C)2025 by KDDI Technology
 // Programmed by H.Kodama (D.F.Mac.@TripArts Music)
 
-import avatar from "../libs/animal-avatar-generator.esm.js";
+import avatar from "/libs/animal-avatar-generator.esm.js";
 
 const html = `
 <style>

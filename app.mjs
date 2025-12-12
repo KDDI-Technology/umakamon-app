@@ -11,6 +11,7 @@ import path from 'path';
 import auth from 'basic-auth';
 import { Server } from "socket.io";
 import dt from 'date-utils';
+import dotenv from "dotenv";
 
 const fsp = fs.promises;
 const dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -24,6 +25,8 @@ let interval;
 let prevSeconds = -1;
 let prevDiv = -1;
 const DIV_NUM = 6;
+
+dotenv.config();
 
 function log(str){
   var dt = new Date();
@@ -40,11 +43,23 @@ try {
   console.error(err);
 }
 
+function basicAuth(req, res, next){
+  const user = auth(req);
+  const validUser = process.env.BASIC_USER;
+  const validPass = process.env.BASIC_PASS;
+  if (!user || user.name !== validUser || user.pass !== validPass) {
+    res.set("WWW-Authenticate", 'Basic realm="Protected Area"');
+    return res.status(401).send("Authentication required.");
+  }
+  next();
+}
+
 async function runExpressApp() {
   app = express();
   app.use(express.urlencoded({ extended: true , limit: '10mb'}));
   app.use(express.json({ extended: true , limit: '10mb'}));
   app.use(cors());
+  app.use('/center',basicAuth,express.static('./www/center'));
   app.use('/',express.static('./www'));
 }
 

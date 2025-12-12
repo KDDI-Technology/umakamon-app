@@ -3,7 +3,7 @@
 // (C)2025 by KDDI Technology
 // Programmed by H.Kodama (D.F.Mac.@TripArts Music)
 
-import avatar from "../libs/animal-avatar-generator.esm.js";
+import avatar from "/libs/animal-avatar-generator.esm.js";
 
 const html = `
 <style>
@@ -106,12 +106,11 @@ const html = `
   height:40px;
   cursor:pointer;
   background-color:white;
-  background-image:url(./img/ranking.png);
+  background-image:url(/img/ranking.png);
   background-position:center;
   background-repeat:no-repeat;
   background-size:contain;
   border-radius:5px;
-
 }
 .hide{
   display:none!important;
