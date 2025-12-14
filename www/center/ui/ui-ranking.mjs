@@ -149,7 +149,6 @@ const html = `
     <div id="uiRankUpdateTicker" class="hide"></div>
   </div>
   <div id="uiRankBody"></div>
-  <div id="uiRankBottom">あなたは<span id="myRank"></span>位です。</div>
 </div>
 <div id="uiRankToggle"></div>
 `;
@@ -163,16 +162,21 @@ const htmlRow = `
   </div>
 `;
 
+const yourRankhtml = `
+  <div id="uiRankBottom">あなたは<span id="myRank"></span>位です。</div>
+`;
+
 const TICKER_TIME = 1000; // update ticker timer 
 
 class uiRanking{
-  constructor(dom,socket){
+  constructor(dom,socket,mode){
     this.dom = dom;
     this.shadow = this.dom.attachShadow({ mode: "open" });
     this.socket = socket;
     this.status = "hide";
     this.updateTimer = null;
     this.template = null;
+    this.mode = (mode == undefined)? "client" : "master";
   }
   async init(){
     this.shadow.appendChild(this.#makeDomFromTemplate(html));
@@ -181,7 +185,10 @@ class uiRanking{
     this.$body = this.$main.querySelector("#uiRankBody");
     this.$ticker = this.$main.querySelector("#uiRankUpdateTicker");
     this.$toggle = this.shadow.querySelector("#uiRankToggle");
-    this.$myRank = this.$main.querySelector("#myRank");
+    if(this.mode == "client"){
+      this.$main.appendChild(this.#makeDomFromTemplate(yourRankhtml));
+      this.$myRank = this.$main.querySelector("#myRank");
+    }
     this.$toggle.onclick = () => {
       if(this.status == "hide"){
         this.show();
@@ -213,8 +220,10 @@ class uiRanking{
     console.dir(ranking);
     const fragment = new DocumentFragment();
     this.#startUpdateTicker();
-    this.$myRank.innerHTML = ranking.myRank;
     if(ranking != null){
+      if(this.mode == "client"){
+        this.$myRank.innerHTML = ranking.myRank;
+      }
       const rankNum = (ranking.users.length > 3)? 3 : ranking.users.length;
       for(let cnt=0;cnt<rankNum;cnt ++){
         const rank = cnt+1;
@@ -256,7 +265,13 @@ class uiRanking{
   }
   async #getRanking(){
     try {
-      const res = await this.socket.timeout(3000).emitWithAck("getRanking",null);
+      let event;
+      if(this.mode == "client"){
+        event = "getRanking";
+      }else{
+        event = "getRankingFromMaster";
+      }
+      const res = await this.socket.timeout(3000).emitWithAck(event,null);
       return res;
     } catch (err) {
       console.error("uiRanking.#getRanking() server error = "+err);

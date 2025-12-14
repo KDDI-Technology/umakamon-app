@@ -1,4 +1,5 @@
-import * as PIXI from './pixi.min-v6.2.1.mjs';
+import * as PIXI from '/libs/pixi.min-v6.2.1.mjs';
+import animGame from './animation-game.mjs';
 
 const DEB = false;
 
@@ -45,6 +46,7 @@ class animation{
     this.resizeTimer = null;
     this.wrapper = null;
     this.nowFaceIdx = null;
+    this.game = new animGame();
   }
   init(wrapper){
     if(DEB) console.log("animation.init()");
@@ -63,9 +65,11 @@ class animation{
     this.app.ticker.add((delta) => {
       this.updateBgLines();
       this.updateFaces();
+      this.game.update();
     });
     this.initBgLines();
     this.initFaces();
+    this.game.init();
   }
 
   ///////////////////////////////////////////////////////////////////////
@@ -129,6 +133,22 @@ class animation{
       }
     }
   }
+  /////////////////////////////////////
+  // CountDown
+  /////////////////////////////////////
+  initStartup(){
+    this.startupStyle = new PIXI.TextStyle({
+      fontFamily: 'KTEGAKI',
+      fontSize:128,
+      fill:0xFF0000
+    });
+    const text = new PIXI.Text('3', this.startupStyle);
+    this.startupContainer = new PIXI.Container();
+    this.startupContainer.position.set(CONTENT_WIDTH/2,CONTENT_HEIGHT/2);
+    this.app.stage.addChild(this.startupContainer);
+
+  }
+
 
   /////////////////////////////////////
   // faces

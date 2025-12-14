@@ -70,6 +70,7 @@ class colabPlayer{
   }
   play(at,index,_velocity){
     if(DEB) console.log("colabPlayer.play() at="+at+" index="+index+" vel="+_velocity);
+    this.context.resume();
     let sampler = this.samplers[index].smp;
     let _when = at;
     sampler.play({when:_when},(this.gain*_velocity));

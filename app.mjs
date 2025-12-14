@@ -133,11 +133,16 @@ function runSocketServer(){
       for(let key in clients){
         io.to(key).emit("clients",len);
       }
+      for(let key in masters){
+        io.to(key).emit("clients",len);
+      }
     });
 
     socket.on("master",(data)=>{
       log("master : "+data);
       masters[socket.id] = {id:socket.id};
+      let len = getUserNum();
+      io.to(socket.id).emit("clients",len);
     });
 
     socket.on("push",(data,callback)=>{
@@ -176,6 +181,15 @@ function runSocketServer(){
       callback(payload);
     });
 
+    socket.on("getRankingFromMaster",(data,callback)=>{
+      const ranking = getRanking();
+      const top3 = ranking.slice(0, 3);
+      const payload = {
+        users:top3
+      };
+      callback(payload);
+    });
+
     socket.on("disconnect",(data)=>{
       log("disconnected : "+socket.id);
       let user = cons[socket.id].user;
@@ -184,6 +198,9 @@ function runSocketServer(){
         delete clients[socket.id];
         let len = getUserNum();
         for(let key in clients){
+          io.to(key).emit("clients",len);
+        }
+        for(let key in masters){
           io.to(key).emit("clients",len);
         }
       }
@@ -291,6 +308,18 @@ function getRankingAndPosition(_userid) {
   };
 }
 
+function getRanking() {
+  const totals = get30minRanking();
+  let ranking = Object.entries(totals).map(([userid, score]) => ({
+    userid,
+    score,
+    name: users[userid]?.name ?? "",
+    icon: users[userid]?.icon ?? ""
+  }));
+  ranking.sort((a, b) => b.score - a.score);
+  return ranking;
+}
+
 function broadcast30minRanking() {
   for (const socketid in clients) {
     const userid = clients[socketid].userid;
@@ -300,6 +329,12 @@ function broadcast30minRanking() {
       users:top3,
       myRank: position
     };
+    io.to(socketid).emit("rankingUpdate",payload);
+  }
+  for (const socketid in masters) {
+    const ranking = getRanking();
+    const top3 = ranking.slice(0, 3);
+    const payload = {users:top3};
     io.to(socketid).emit("rankingUpdate",payload);
   }
 }
