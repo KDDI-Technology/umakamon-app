@@ -13,6 +13,7 @@ const COUNTDOWN_FV_TIME = 60;         // 1s: チャレンジ開始
 const COUNTDOWN_NUM_TIME = 30;        // 1s: 3-1
 const COUNTDOWN_PLAYSTART_TIME = 30;  // 1s: スタート
 const COUNTDOWN_ANIM_COUNT_TIME = 10; // 10 tick
+const ADDSCORE_COUNT_TIME = 12;
 
 class game{
   constructor(app){
@@ -44,7 +45,7 @@ class game{
     this.endPlaying();
     this.endResult();
   }
-  getStaus(){
+  getStatus(){
     return this.status;
   }
   setOnGameStatusChange(func){
@@ -68,7 +69,7 @@ class game{
     this.countdownText.anchor.set(0.5);
     this.countdownContainer = new PIXI.Container();
     this.countdownContainer.addChild(this.countdownText);
-    this.countdownContainer.position.set(CONTENT_WIDTH/2,CONTENT_HEIGHT/2);
+    this.countdownContainer.position.set(this.app.screen.width/2,this.app.screen.height/2);
     this.countdownContainer.visible = false;
     this.app.stage.addChild(this.countdownContainer);
   }
@@ -157,38 +158,108 @@ class game{
   initPlaying(){
     this.scoreStyle = new PIXI.TextStyle({
       fontFamily: 'KTEGAKI',
-      fontSize:100,
-      fill:0x3300FF,
+      fontSize:60,
+      fill:0x8800FF,
       stroke: 0xffffff,
       strokeThickness: 6
     });
-    this.scoreText = new PIXI.Text(0, this.startupStyle);
-    this.scoreText.anchor.set(0.5);
-    this.scoreContainer = new PIXI.Container();
-    this.scoreContainer.addChild(this.scoreText);
-    this.scoreContainer.position.set(CONTENT_WIDTH/2,CONTENT_HEIGHT/2);
-    this.scoreContainer.visible = false;
-    this.app.stage.addChild(this.scoreContainer);
+    this.scoreText = new PIXI.Text("得点 0 pt", this.scoreStyle);
+    this.scoreText.anchor.set(0.5,0);
+    const posx = (this.app.screen.width/4)*3;
+    this.scoreText.position.set(posx,20);
+
+    this.ptimeStyle = new PIXI.TextStyle({
+      fontFamily: 'KTEGAKI',
+      fontSize:60,
+      fill:0x0000FF,
+      stroke: 0xffffff,
+      strokeThickness: 4
+    });
+    this.ptimeText = new PIXI.Text("残り 30 秒", this.ptimeStyle);
+    this.ptimeText.anchor.set(0.5,0);
+    this.ptimeText.position.set(this.app.screen.width / 4,20);
+
+    this.addScoreStyle = new PIXI.TextStyle({
+      fontFamily: 'KTEGAKI',
+      fontSize:240,
+      fill:0x30FFA0,
+      stroke: 0xffffff,
+      strokeThickness: 8
+    });
+    this.addScoreText = new PIXI.Text("+", this.addScoreStyle);
+    this.addScoreText.scale.set(0.2);
+    this.addScoreText.anchor.set(0.5,0.5);
+    this.addScoreText.position.set(this.app.screen.width/2,this.app.screen.height/2);
+    this.addScoreText.visible = false;
+
+    this.playingContainer = new PIXI.Container();
+    this.playingContainer.addChild(this.scoreText);
+    this.playingContainer.addChild(this.ptimeText);
+    this.playingContainer.addChild(this.addScoreText);
+    this.playingContainer.visible = false;
+    this.app.stage.addChild(this.playingContainer);
   }
   startPlaying(){
     this.status = 2;
     this.score = 0;
-    this.scoreContainer.visible = true;
+    this.ptimeText.text = "残り 30 秒";
+    this.scoreText.text = "得点 0 pt";
+    this.playingContainer.visible = true;
+    this.playStartTime = Date.now();
+    this.playPrevTime = this.playStartTime;
+    this.playCounter = 30;
+    this.addScoreCounter = 0;
+    this.addScoreText.scale.set(0.2);
   }
   updatePlaying(){
     if(this.status != 2){
       return;
     }
+    const now = Date.now();
+    if(now >= (this.playPrevTime + 1000)){
+      this.playCounter --;
+      if(this.playCounter == 0){
+        console.log("playing end");
+        this.startResult();
+        this.endPlaying();
+      }
+      this.playPrevTime += 1000;
+      this.ptimeText.text = "残り "+this.playCounter+" 秒";
+    }
     if((this.tickCount % 5) == 4){ // 1秒に6回更新
-      this.scoreText.text = this.score;
+      this.scoreText.text = "得点 "+this.score+" pt";
+    }
+    if(this.addScoreCounter > 0){
+      console.log("addScoreCounter="+this.addScoreCounter);
+      this.addScoreCounter --;
+      this.addScoreText.scale.x *= 1.1;
+      this.addScoreText.scale.y *= 1.1;
+      this.addScoreText.rotation += 0.1;
+      if(this.addScoreCounter == 0){
+        this.addScoreText.visible = false;
+      }
     }
     this.tickCount ++;
   }
-  setScore(score){
-    this.score = score;
+  addScore(score){
+    console.log("game.addScore() score="+score);
+    this.score += score;
+    this.addScoreText.text = "+"+score;
+    this.addScoreCounter = ADDSCORE_COUNT_TIME;
+    this.addScoreText.visible = true;
+    let scale=0.2;
+    if((score >= 10)&&(score < 30)){
+      scale = 0.5;
+    }else if((score >= 30)&&(score < 50)){
+      scale = 1;
+    }else if((score >= 50)&&(score < 60)){
+      scale = 2;
+    }
+    this.addScoreText.scale.set(scale);
   }
   endPlaying(){
-    this.scoreContainer.visible = false;
+    this.playingContainer.visible = false;
+    this.addScoreText.scale.set(0.2);
   }
 
   /////////////////////////////////////
@@ -196,10 +267,9 @@ class game{
   /////////////////////////////////////
   // おつかれさまでした！→最終的な点数表示を全画面で10秒間実施
   initResult(){
-    this.status = 3;
   }
   startResult(){
-
+    this.status = 3;
   }
   updateResult(){
 
@@ -208,73 +278,16 @@ class game{
     this.status = 0;
   }
 
-/*
-  /////////////////////////////////////
-  // faces
-  /////////////////////////////////////
-  initFaces(){
-    this.faceContainer = new PIXI.Container();
-    this.faceContainer.position.set(CONTENT_WIDTH/2,CONTENT_HEIGHT/2);
-    this.app.stage.addChild(this.faceContainer);
-    this.faceTex = [];
-    this.faceSpr = [];
-    for(let cnt=0;cnt<faces.length;cnt++){
-      let tex = PIXI.Texture.from(faces[cnt]);
-      this.faceTex.push(tex);
-      let spr = new PIXI.Sprite(tex);
-      spr.anchor.x = 0.5;
-      spr.anchor.y = 0.5;
-      spr.scale.x = 0.5;
-      spr.scale.y = 0.5;
-      this.faceSpr.push(spr);
-    }
-  }
-  addFace(index){
-    if(index >= faces.length){
-      return;
-    }
-    this.nowFaceIdx = index;
-    this.faceSpr[index].speed = (Math.random() * 2) - 1;
-    this.faceContainer.removeChildren();
-    this.faceContainer.addChild(this.faceSpr[index]); 
-  }
-  updateFaces(){
-    if(this.nowFaceIdx != null){
-      this.faceSpr[this.nowFaceIdx].rotation += this.faceSpr[this.nowFaceIdx].speed;
-      this.faceSpr[this.nowFaceIdx].scale.x += 0.1;
-      this.faceSpr[this.nowFaceIdx].scale.y += 0.1;
-    }
-  }
-  removeFace(){
-    if(this.nowFaceIdx != null){
-      this.faceSpr[this.nowFaceIdx].rotation = 0;
-      this.faceSpr[this.nowFaceIdx].scale.x = 0.5;
-      this.faceSpr[this.nowFaceIdx].scale.y = 0.5;
-      this.faceContainer.removeChildren();
-      this.nowFaceIdx = null;
-    }
-  }
-
   /////////////////////////////////////
   // resize
   /////////////////////////////////////
-  resize(w,h){
-    if(DEB) console.log("animation.resize()");
-    CONTENT_WIDTH = w; // window.innerWidth;
-    CONTENT_HEIGHT = h; //window.innerHeight;
-    if(this.resizeTimer){
-      clearTimeout(this.resizeTimer);
-      this.resizeTimer = null;
-    }
-    this.resizeTimer = setTimeout(()=>{
-      if(DEB) console.log("animation.resize() timeout");
-      this.app.renderer.resize(CONTENT_WIDTH, CONTENT_HEIGHT);
-      this.faceContainer.position.set(CONTENT_WIDTH/2,CONTENT_HEIGHT/2);
-      this.grpContainer.position.set(CONTENT_WIDTH / 2, CONTENT_HEIGHT / 2);
-      this.grpContainer.pivot.x = CONTENT_WIDTH/2; 
-      this.grpContainer.pivot.y = CONTENT_HEIGHT/2; 
-    },50);
+  resize(){
+    this.countdownContainer.position.set(this.app.screen.width/2,this.app.screen.height/2);
+    const posx = (this.app.screen.width/4)*3;
+    this.scoreText.position.set(posx,20);
+    this.ptimeText.position.set(this.app.screen.width / 4,20);
+    this.addScoreText.position.set(this.app.screen.width/2,this.app.screen.height/2);
   }
-*/
+
 }
 export default game;

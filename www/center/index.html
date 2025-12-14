@@ -542,13 +542,22 @@ $loadingAnim.classList.add("hide");
 document.body.onkeydown = function(ev){
   console.log("keydown: "+ev.keyCode);
   switch(ev.keyCode){
-  case 48: ; break; // 0
+  case 48: testFire(); break; // 0
   case 49: anim.game.start(); break;  // 1
   case 50: ; break; // 2
   case 51: ; break; // 3
   case 52: ; break; // 4
   case 53: ; break; // 5
   default:break;
+  }
+}
+
+function testFire(){
+  if(anim.game.getStatus() == 2){
+    const score = Math.floor(Math.random()*60);
+    const index = score % 9;
+    startAnim(index);
+    anim.game.addScore(score);
   }
 }
 

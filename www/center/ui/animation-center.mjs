@@ -213,6 +213,7 @@ class animation{
       this.grpContainer.position.set(CONTENT_WIDTH / 2, CONTENT_HEIGHT / 2);
       this.grpContainer.pivot.x = CONTENT_WIDTH/2; 
       this.grpContainer.pivot.y = CONTENT_HEIGHT/2; 
+      this.game.resize();
     },50);
   }
 }
