@@ -107,7 +107,7 @@ class userAnimation{
       const face = this.users[cnt].children[0];
       const name = this.users[cnt].children[1];
       const score = this.users[cnt].children[2];
-      if((this.tick % 4) > 1){
+      if((this.tick % 16) > 7){
         score.scale.x += 0.1;
         score.scale.y += 0.1;
         name.scale.x -= 0.1;
@@ -118,11 +118,11 @@ class userAnimation{
         name.scale.x += 0.1;
         name.scale.y += 0.1;
       }
-      if((this.tick % 8) == 1){
+      if((this.tick % 16) == 1){
         face.scale.x *= 2;
         face.scale.y *= 2;
       }
-      if((this.tick % 8) == 5){
+      if((this.tick % 16) == 9){
         face.scale.x *= 0.5;
         face.scale.y *= 0.5;
       }
