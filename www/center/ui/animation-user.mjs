@@ -65,10 +65,10 @@ class userAnimation{
 
     const nameStyle = new PIXI.TextStyle({
       fontFamily: 'KTEGAKI',
-      fontSize:12,
+      fontSize:16,
       fill:0x000000,
       stroke: 0xffffff,
-      strokeThickness: 3
+      strokeThickness: 4
     });
     const nameText = new PIXI.Text(ud.name, nameStyle);
     nameText.anchor.set(0,0);
@@ -96,7 +96,7 @@ class userAnimation{
 
     const h = Math.floor(Math.random()*(this.app.screen.height/3));
     userContainer.position.set(-100,h);
-    userContainer.speed =  Math.floor(Math.random()*10)+4;
+    userContainer.speed =  Math.floor(Math.random()*6)+2;
     this.users.push(userContainer);
     this.baseContainer.addChild(userContainer);
   }
