@@ -511,7 +511,7 @@ socket.on("push", (data)=>{
   console.log("push received!");
   anim.users.addUser(data);
   if(anim.game.getStatus() == 2){
-    anim.game.addScore(data.score);
+    anim.game.addScore(data.score,"guest");
   }
 });
 
@@ -572,7 +572,7 @@ function testFire(){
     const score = Math.floor(Math.random()*60);
     const index = score % 9;
     startAnim(index);
-    anim.game.addScore(score);
+    anim.game.addScore(score,"center");
   }
 }
 

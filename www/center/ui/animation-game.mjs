@@ -246,9 +246,12 @@ class game{
     }
     this.tickCount ++;
   }
-  addScore(score){
+  addScore(score,mode){
     console.log("game.addScore() score="+score);
     this.score += score;
+    if(mode == "guest"){
+      return;
+    }
     this.addScoreText.text = "+"+score;
     this.addScoreCounter = ADDSCORE_COUNT_TIME;
     this.addScoreText.visible = true;
