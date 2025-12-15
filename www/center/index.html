@@ -510,6 +510,9 @@ socket.on("disconnect", () => {
 socket.on("push", (data)=>{
   console.log("push received!");
   anim.users.addUser(data);
+  if(anim.game.getStatus() == 2){
+    anim.game.addScore(data.score);
+  }
 });
 
 socket.on("clients", (num)=>{
