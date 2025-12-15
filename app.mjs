@@ -84,7 +84,7 @@ let users = {};     // userの一覧を管理するMAP        key = userid
 
 let snapshots = [];    // userランキングの集計用 (30分リングバッファ)
 let minuteDeltas = {};  // 1分間のscore増加分蓄積用
-let masterRanking = [];  // masterスコアの集計用 (実質masterは1つなのでどっちかというと履歴用)
+let masterScores = {};  // masterスコアの集計用
 
 function runSocketServer(){
   io = new Server(webServer, {path:"/ws"});
@@ -155,12 +155,19 @@ function runSocketServer(){
         if(socket.id in clients){
           let userid = clients[socket.id].userid;
           console.log("push from client. userid="+userid);
-          let delta = getScore(Number(data));
+          let index = Number(data);
+          let delta = getScore(index);
           users[userid].score = users[userid].score + delta
           minuteDeltas[userid] = (minuteDeltas[userid] || 0) + delta;
           score = users[userid].score;
           for(let key in masters){
-            io.to(key).emit("push",data);
+            let sendData = {
+              name:users[userid].name,
+              icon:users[userid].icon,
+              score:delta,
+              index:index
+            };
+            io.to(key).emit("push",sendData);
           }
         }else{
           console.log("push from unregisterd user.");
@@ -180,6 +187,18 @@ function runSocketServer(){
       };
       callback(payload);
     });
+
+    socket.on("updateCenterScore",(data,callback)=>{
+    // "master" 複数発行できるが基本1台という想定なので、得点は上書きする。
+      masterScores[""+data.time] = data; // data = {time:time, score:score}
+      const scores = calcMasterRanking(data.time);
+      callback(scores);
+    });
+
+    socket.on("getCenterScores",(data,callback)=>{
+      const scores = calcMasterRanking();
+      callback(scores.scores);
+    })
 
     socket.on("getRankingFromMaster",(data,callback)=>{
       const ranking = getRanking();
@@ -346,4 +365,19 @@ function getUserNum(){
     users[userid] = userid;
   }
   return Object.keys(users).length;
+}
+
+function calcMasterRanking(time){
+  let _rank = null;
+  let scores = Object.values(masterScores).sort((a,b)=>b.score-a.score);
+  if((time != undefined)&&(time != null)){
+    for(let cnt=0;cnt<scores.length;cnt++){
+      if(scores[cnt].time == time){
+        _rank = cnt+1;
+        break;
+      }
+    }
+  }
+  let _scores10 = scores.slice(0, 10);
+  return {scores:_scores10,rank:_rank};
 }

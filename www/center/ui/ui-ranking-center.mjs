@@ -1,5 +1,5 @@
-// ui-ranking.mjs
-// umakamon app user ranking UI
+// ui-ranking-center.mjs
+// umakamon app user ranking UI for center app
 // (C)2025 by KDDI Technology
 // Programmed by H.Kodama (D.F.Mac.@TripArts Music)
 
@@ -10,9 +10,8 @@ const html = `
 #uiRankWrap{
   position:absolute;
   right:0px;
-  top:0px;
+  bottom:10px;
   width:60px;
-  height:60px;
   padding:10px;
   display:flex;
   flex-direction:column;
@@ -20,8 +19,19 @@ const html = `
   color:white;
   box-sizing:border-box;
 }
-#uiRankHeader{
-  position:relative;
+#uiRankCenterWrap{
+  position:absolute;
+  right:0px;
+  top:100px;
+  width:60px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  color:white;
+  box-sizing:border-box;
+}
+.uiRankHeader{
   width:100%;
   height:40px;
   display:flex;
@@ -32,10 +42,9 @@ const html = `
   border-radius:20px 20px 0px 0px;
   background-color:rgba(0,0,0,0.5);
 }
-#uiRankBottom{
-  position:relative;
+.uiRankBottom{
   width:100%;
-  height:40px;
+  height:20px;
   line-height:40px;
   vertical-align:middle;
   padding:0px 10px;
@@ -44,7 +53,7 @@ const html = `
   border-radius:0px 0px 20px 20px;
   background-color:rgba(0,0,0,0.5);
 }
-#uiRankBody{
+.uiRankBody{
   padding:0px 0px;
   width:100%;
   box-sizing:border-box;
@@ -54,8 +63,8 @@ const html = `
 }
 #uiRankUpdateTicker{
   position:absolute;
-  top:10px;
-  right:10px;
+  top:20px;
+  right:20px;
   width:20px;
   height:20px;
   vertical-align:middle;
@@ -87,7 +96,15 @@ const html = `
 }
 .uiRankName{
   height:20px;
-  width:120px;
+  width:160px;
+  margin-right:5px;
+  line-height:20px;
+  font-size:16px;
+  vertical-align:middle;
+}
+.uiRankTime{
+  height:20px;
+  width:180px;
   margin-right:5px;
   line-height:20px;
   font-size:16px;
@@ -116,9 +133,8 @@ const html = `
   display:none!important;
 }
 .RkShow{
-  margin-top:60px;
-  width:280px!important;
-  height:140px!important; 
+  width:320px!important;
+  min-height:80px!important; 
 }
 .uiRankRank{
   width:20px;
@@ -143,12 +159,21 @@ const html = `
 }
 </style>
 <slot></slot>
+<div id="uiRankCenterWrap" class="hide">
+  <div class="uiRankHeader">
+    <div id="uiRankCenterHeaderTitle">得点トップ10</div>
+    <div id="uiRankCenterUpdateTicker" class="hide"></div>
+  </div>
+  <div class="uiRankBody"></div>
+  <div class="uiRankBottom"></div>
+</div>
 <div id="uiRankWrap" class="hide">
-  <div id="uiRankHeader">
-    <div id="uiRankHeaderTitle">過去30分トップ3</div>
+  <div class="uiRankHeader">
+    <div id="uiRankHeaderTitle">ゲスト過去30分トップ3</div>
     <div id="uiRankUpdateTicker" class="hide"></div>
   </div>
-  <div id="uiRankBody"></div>
+  <div class="uiRankBody"></div>
+  <div class="uiRankBottom"></div>
 </div>
 <div id="uiRankToggle"></div>
 `;
@@ -162,33 +187,35 @@ const htmlRow = `
   </div>
 `;
 
-const yourRankhtml = `
-  <div id="uiRankBottom">あなたは<span id="myRank"></span>位です。</div>
+const centerRow = `
+  <div class="uiRankRowWrap">
+    <div class="uiRankRank"></div>
+    <div class="uiRankTime"></div>
+    <div class="uiRankScore"></div>
+  </div>
 `;
 
 const TICKER_TIME = 1000; // update ticker timer 
 
-class uiRanking{
-  constructor(dom,socket,mode){
+class uiRankingCenter{
+  constructor(dom,socket){
     this.dom = dom;
     this.shadow = this.dom.attachShadow({ mode: "open" });
     this.socket = socket;
     this.status = "hide";
     this.updateTimer = null;
     this.template = null;
-    this.mode = (mode == undefined)? "client" : "master";
   }
   async init(){
     this.shadow.appendChild(this.#makeDomFromTemplate(html));
     this.$main = this.shadow.querySelector("#uiRankWrap");
-    this.$header = this.$main.querySelector("#uiRankHeader");
-    this.$body = this.$main.querySelector("#uiRankBody");
+    this.$body = this.$main.querySelector(".uiRankBody");
     this.$ticker = this.$main.querySelector("#uiRankUpdateTicker");
     this.$toggle = this.shadow.querySelector("#uiRankToggle");
-    if(this.mode == "client"){
-      this.$main.appendChild(this.#makeDomFromTemplate(yourRankhtml));
-      this.$myRank = this.$main.querySelector("#myRank");
-    }
+    this.$cMain = this.shadow.querySelector("#uiRankCenterWrap");
+    this.$cBody = this.$cMain.querySelector(".uiRankBody");
+    this.$cTicker = this.$cMain.querySelector("#uiRankCenterUpdateTicker");
+
     this.$toggle.onclick = () => {
       if(this.status == "hide"){
         this.show();
@@ -197,33 +224,42 @@ class uiRanking{
       }
     };
     this.socket.on("rankingUpdate",(data)=>{
-      this._updateView(data);
+      this.#updateView(data);
     });
     await this.#updateRanking();
+    await this.#updateCenterScores();
   }
   hide(){
     this.$main.classList.add("hide");
+    this.$cMain.classList.add("hide");
     this.$main.classList.remove("RkShow");
+    this.$cMain.classList.remove("RkShow");
     this.status = "hide";
   }
   show(){
     this.$main.classList.remove("hide");
+    this.$cMain.classList.remove("hide");
     this.$main.classList.add("RkShow");
+    this.$cMain.classList.add("RkShow");
     this.status = "show";
+  }
+  updateCenterScores(scores){
+    this.#updateCenterView(scores);
   }
   async #updateRanking(){
     const ranking = await this.#getRanking();
-    this._updateView(ranking);
+    this.#updateView(ranking);
   }
-  _updateView(ranking){
-    console.log("_updateView()");
-    console.dir(ranking);
+  async #updateCenterScores(){
+    const scores = await this.#getCenterScores();
+    this.#updateCenterView(scores);
+  }
+  #updateView(ranking){
+//    console.log("_updateView()");
+//    console.dir(ranking);
     const fragment = new DocumentFragment();
-    this.#startUpdateTicker();
+    this.#startUpdateTicker("guest");
     if(ranking != null){
-      if(this.mode == "client"){
-        this.$myRank.innerHTML = ranking.myRank;
-      }
       const rankNum = (ranking.users.length > 3)? 3 : ranking.users.length;
       for(let cnt=0;cnt<rankNum;cnt ++){
         const rank = cnt+1;
@@ -258,6 +294,39 @@ class uiRanking{
     $score.innerHTML = score;
     return $row;
   }
+  #updateCenterView(scores){
+    console.log("#updateCenterView()");
+    console.dir(scores);
+    const fragment = new DocumentFragment();
+    this.#startUpdateTicker("center");
+    if(scores != null){
+      const num = (scores.length > 10)? 10 : scores.length;
+      for(let cnt=0;cnt<num;cnt ++){
+        const rank = cnt+1;
+        const time = scores[cnt].time;
+        const score = scores[cnt].score;
+        const $row = this.#makeCenterRowDom(rank,time,score);
+        if(cnt==0){
+          $row.children[0].classList.add("uiRankRowTop");
+        }
+        if(cnt==(num-1)){
+          $row.children[0].classList.add("uiRankRowBottom");
+        }
+        fragment.appendChild($row);
+      }
+      this.$cBody.replaceChildren(fragment);
+    }
+  }
+  #makeCenterRowDom(rank,time,score){
+    const $row = this.#makeDomFromTemplate(centerRow);
+    const $rank = $row.querySelector(".uiRankRank");
+    const $time = $row.querySelector(".uiRankTime");
+    const $score = $row.querySelector(".uiRankScore");
+    $rank.innerHTML = rank;
+    $time.innerHTML = this.#formatDate(time);
+    $score.innerHTML = score;
+    return $row;
+  }
   #makeDomFromTemplate(template) {
     const t = document.createElement('template');
     t.innerHTML = template.trim();
@@ -265,33 +334,48 @@ class uiRanking{
   }
   async #getRanking(){
     try {
-      let event;
-      if(this.mode == "client"){
-        event = "getRanking";
-      }else{
-        event = "getRankingFromMaster";
-      }
-      const res = await this.socket.timeout(3000).emitWithAck(event,null);
+      const res = await this.socket.timeout(3000).emitWithAck("getRankingFromMaster",null);
       return res;
     } catch (err) {
       console.error("uiRanking.#getRanking() server error = "+err);
       return null;
     }
   }
+  async #getCenterScores(){
+    try {
+      const res = await this.socket.timeout(3000).emitWithAck("getCenterScores",null);
+      return res;
+    } catch (err) {
+      console.error("uiRanking.#getCenterScores() server error = "+err);
+      return null;
+    }
+  }
+
   #genIcon(str){
     const svg = avatar(str, { size: 128, backgroundColors: ['transparent'] ,blackout:false});
     return svg;
   }
-  #startUpdateTicker(){
-    this.$ticker.classList.remove("hide");
+  #startUpdateTicker(type){
+    let $dom = (type == "guest")? this.$ticker : this.$cTicker;
+    $dom.classList.remove("hide");
     if(this.updateTimer != null){
       clearTimeout(this.updateTimer);
       this.updateTimer = null;
     }
     this.updateTimer = setTimeout(()=>{
-      this.$ticker.classList.add("hide");
+      $dom.classList.add("hide");
     },TICKER_TIME);
+  }
+  #formatDate(ms){
+    const d = new Date(ms);
+    const yyyy = d.getFullYear();
+    const mm   = String(d.getMonth() + 1).padStart(2, '0');
+    const dd   = String(d.getDate()).padStart(2, '0');
+    const hh   = String(d.getHours()).padStart(2, '0');
+    const min  = String(d.getMinutes()).padStart(2, '0');
+    const ss   = String(d.getSeconds()).padStart(2, '0');
+    return `${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}`;
   }
 }
 
-export default uiRanking;
+export default uiRankingCenter;

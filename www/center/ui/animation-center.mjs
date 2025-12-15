@@ -1,5 +1,6 @@
 import * as PIXI from '/libs/pixi.min-v6.2.1.mjs';
 import animGame from './animation-game.mjs';
+import Users from './animation-user.mjs';
 
 const DEB = false;
 
@@ -51,6 +52,7 @@ class animation{
     this.resizeTimer = null;
     this.wrapper = null;
     this.nowFaceIdx = null;
+    this.users = new Users(this.app);
     this.game = new animGame(this.app);
   }
   init(wrapper){
@@ -64,10 +66,12 @@ class animation{
     this.app.ticker.add((delta) => {
       this.updateBgLines();
       this.updateFaces();
+      this.users.update();
       this.game.update();
     });
     this.initBgLines();
     this.initFaces();
+    this.users.init();
     this.game.init();
   }
 

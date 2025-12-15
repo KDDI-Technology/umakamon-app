@@ -2,26 +2,22 @@ import * as PIXI from '/libs/pixi.min-v6.2.1.mjs';
 
 const DEB = false;
 
-PIXI.settings.RENDER_OPTIONS.autoResize = true;
-PIXI.settings.RESOLUTION = 1;
-
-let CONTENT_WIDTH = window.innerWidth;
-let CONTENT_HEIGHT = window.innerHeight;
-const BEAT_EFFECT_MAX = 12;
-
 const COUNTDOWN_FV_TIME = 60;         // 1s: チャレンジ開始
 const COUNTDOWN_NUM_TIME = 30;        // 1s: 3-1
 const COUNTDOWN_PLAYSTART_TIME = 30;  // 1s: スタート
 const COUNTDOWN_ANIM_COUNT_TIME = 10; // 10 tick
 const ADDSCORE_COUNT_TIME = 12;
+const RESULT_LATCH_TIME = 5000;       // 5s
 
 class game{
   constructor(app){
     this.app = app;
-    this.status = 0; // 0: stop 1: countdown 2: playing 3: result
+    this.status = 0; // 0: stop 1: countdown 2: playing 3: result 4: wait return
     this.countdownValue = null; // 4: チャレンジ開始 3-1:数字表示 0:スタート!
     this.onGameStatusChange = null; // this.status が変化するタイミングでfire
     this.tickCount = 0;
+    this.closeWaiting = false;
+    this.socket = null;
   }
   init(){
     if(DEB) console.log("game.init()");
@@ -51,6 +47,9 @@ class game{
   setOnGameStatusChange(func){
     this.onGameStatusChange = func;
   }
+  setSocket(socket){
+    this.socket = socket;
+  }
 
   /////////////////////////////////////
   // CountDown
@@ -58,14 +57,14 @@ class game{
   // 開始のカウントダウン。チャレンジ開始！,3,2,1,スタート!
 
   initCountDown(){
-    this.startupStyle = new PIXI.TextStyle({
+    const startupStyle = new PIXI.TextStyle({
       fontFamily: 'KTEGAKI',
       fontSize:180,
       fill:0xFF0000,
       stroke: 0xffffff,
       strokeThickness: 8
     });
-    this.countdownText = new PIXI.Text('チャレンジ開始！', this.startupStyle);
+    this.countdownText = new PIXI.Text('チャレンジ開始！', startupStyle);
     this.countdownText.anchor.set(0.5);
     this.countdownContainer = new PIXI.Container();
     this.countdownContainer.addChild(this.countdownText);
@@ -80,6 +79,9 @@ class game{
     this.countdownValue = 4;
     this.tickCount = 0;
     this.countdownAnimCnt = COUNTDOWN_ANIM_COUNT_TIME;
+    if(this.onGameStatusChange != null){
+      this.onGameStatusChange({status:this.status});
+    }
   }
   endCountDown(){
     this.tickCount = 0;
@@ -156,37 +158,37 @@ class game{
   // ゲーム中の得点表示（画面上部へ）+ カウントダウン表示
   // 
   initPlaying(){
-    this.scoreStyle = new PIXI.TextStyle({
+    const scoreStyle = new PIXI.TextStyle({
       fontFamily: 'KTEGAKI',
       fontSize:60,
       fill:0x8800FF,
       stroke: 0xffffff,
       strokeThickness: 6
     });
-    this.scoreText = new PIXI.Text("得点 0 pt", this.scoreStyle);
+    this.scoreText = new PIXI.Text("得点 0 pt", scoreStyle);
     this.scoreText.anchor.set(0.5,0);
     const posx = (this.app.screen.width/4)*3;
     this.scoreText.position.set(posx,20);
 
-    this.ptimeStyle = new PIXI.TextStyle({
+    const ptimeStyle = new PIXI.TextStyle({
       fontFamily: 'KTEGAKI',
       fontSize:60,
       fill:0x0000FF,
       stroke: 0xffffff,
       strokeThickness: 4
     });
-    this.ptimeText = new PIXI.Text("残り 30 秒", this.ptimeStyle);
+    this.ptimeText = new PIXI.Text("残り 30 秒", ptimeStyle);
     this.ptimeText.anchor.set(0.5,0);
     this.ptimeText.position.set(this.app.screen.width / 4,20);
 
-    this.addScoreStyle = new PIXI.TextStyle({
+    const addScoreStyle = new PIXI.TextStyle({
       fontFamily: 'KTEGAKI',
       fontSize:240,
       fill:0x30FFA0,
       stroke: 0xffffff,
       strokeThickness: 8
     });
-    this.addScoreText = new PIXI.Text("+", this.addScoreStyle);
+    this.addScoreText = new PIXI.Text("+", addScoreStyle);
     this.addScoreText.scale.set(0.2);
     this.addScoreText.anchor.set(0.5,0.5);
     this.addScoreText.position.set(this.app.screen.width/2,this.app.screen.height/2);
@@ -210,6 +212,9 @@ class game{
     this.playCounter = 30;
     this.addScoreCounter = 0;
     this.addScoreText.scale.set(0.2);
+    if(this.onGameStatusChange != null){
+      this.onGameStatusChange({status:this.status});
+    }
   }
   updatePlaying(){
     if(this.status != 2){
@@ -267,15 +272,89 @@ class game{
   /////////////////////////////////////
   // おつかれさまでした！→最終的な点数表示を全画面で10秒間実施
   initResult(){
+    const resScoreStyle = new PIXI.TextStyle({
+      fontFamily: 'KTEGAKI',
+      fontSize:180,
+      fill:0xFF0000,
+      stroke: 0xffffff,
+      strokeThickness: 8
+    });
+    this.resScoreText = new PIXI.Text(' pt', resScoreStyle);
+    this.resScoreText.anchor.set(0.5);
+    const resRankStyle = new PIXI.TextStyle({
+      fontFamily: 'KTEGAKI',
+      fontSize:80,
+      fill:0x003366,
+      stroke: 0xffffff,
+      strokeThickness: 6
+    });
+    this.resRankText = new PIXI.Text('あなたの順位は　　位です。', resRankStyle);
+    this.resRankText.anchor.set(0.5);
+    this.resRankText.position.set(0,this.app.screen.height/3);
+    const resRNumStyle = new PIXI.TextStyle({
+      fontFamily: 'KTEGAKI',
+      fontSize:140,
+      fill:0x0000FF,
+      stroke: 0xffffff,
+      strokeThickness: 8
+    });
+    this.resRNumText = new PIXI.Text('0', resRNumStyle);
+    this.resRNumText.anchor.set(0.5);
+    this.resRNumText.position.set(120,this.app.screen.height/3);
+
+    this.resultContainer = new PIXI.Container();
+    this.resultContainer.addChild(this.resScoreText);
+    this.resultContainer.addChild(this.resRankText);
+    this.resultContainer.addChild(this.resRNumText);
+    this.resultContainer.position.set(this.app.screen.width/2,this.app.screen.height/2);
+    this.resultContainer.visible = false;
+    this.app.stage.addChild(this.resultContainer);
   }
-  startResult(){
+  async startResult(){
     this.status = 3;
+    this.resScoreText.text = this.score+" pt";
+    this.tickCount = 0;
+    let _scores = null;
+    this.resultTimer = setTimeout(()=>{
+      this.status = 4;
+      if(this.closeWaiting){
+        this.endSession();
+        this.closeWaiting = false;
+      }
+      this.resultTimer = null;
+    },5000);
+    if(this.socket != null){
+      try{
+        const _time = Date.now();
+        const res = await this.socket.timeout(3000).emitWithAck("updateCenterScore",{time:_time,score:this.score});
+        this.resRNumText.text = res.rank;
+        _scores = res.scores;
+      }catch(e){
+        console.error("updateCenterScore server error = "+err);
+      }
+    }
+    this.resultContainer.visible = true;
+    if(this.onGameStatusChange != null){
+      this.onGameStatusChange({status:this.status,scores:_scores});
+    }
   }
   updateResult(){
-
+    if((this.status != 3)&&(this.status != 4)){
+      return;
+    }
   }  
-  endResult(){
-    this.status = 0;
+  endSession(){
+    if(this.status == 4){
+      this.status = 0;
+      this.score = 0;
+      this.resultContainer.visible = false;
+      this.closeWaiting = false;
+      if(this.onGameStatusChange != null){
+        this.onGameStatusChange({status:this.status});
+      }
+    }else if(this.status == 3){
+      this.closeWaiting = true;
+    }
   }
 
   /////////////////////////////////////
@@ -287,6 +366,9 @@ class game{
     this.scoreText.position.set(posx,20);
     this.ptimeText.position.set(this.app.screen.width / 4,20);
     this.addScoreText.position.set(this.app.screen.width/2,this.app.screen.height/2);
+    this.resultContainer.position.set(this.app.screen.width/2,this.app.screen.height/2);
+    this.resRankText.position.set(0,this.app.screen.height/3);
+    this.resRNumText.position.set(120,this.app.screen.height/3);
   }
 
 }

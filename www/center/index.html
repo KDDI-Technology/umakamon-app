@@ -507,9 +507,9 @@ socket.on("disconnect", () => {
   $connectionValue.classList.remove("connected");
 });
 
-socket.on("push", (index)=>{
+socket.on("push", (data)=>{
   console.log("push received!");
-//  startAnim(index);
+  anim.users.addUser(data);
 });
 
 socket.on("clients", (num)=>{
@@ -519,7 +519,7 @@ socket.on("clients", (num)=>{
 
 ///////////////////////////////////////////////////////////////////////
 // Ranking UI
-import uiRank from "./ui/ui-ranking.mjs";
+import uiRank from "./ui/ui-ranking-center.mjs";
 const uirank = new uiRank($main,socket,"master");
 await uirank.init();
 
@@ -528,6 +528,11 @@ await uirank.init();
 import bgimage from "./ui/bgimageloader.mjs";
 const imgLoader = new bgimage($pixi_wrapper);
 await imgLoader.load();
+
+///////////////////////////////////////////////////////////////////////
+// for game socket 
+anim.game.setSocket(socket);
+anim.game.setOnGameStatusChange(onGameStatusChange);
 
 ///////////////////////////////////////////////////////////////////////
 // Loading Completed
@@ -542,13 +547,20 @@ $loadingAnim.classList.add("hide");
 document.body.onkeydown = function(ev){
   console.log("keydown: "+ev.keyCode);
   switch(ev.keyCode){
-  case 48: testFire(); break; // 0
-  case 49: anim.game.start(); break;  // 1
+  case 48: testFire();  break;  // 0
+  case 49: gameStart(); break;  // 1
   case 50: ; break; // 2
   case 51: ; break; // 3
   case 52: ; break; // 4
   case 53: ; break; // 5
+  case 67: resetGame(); break; // c
   default:break;
+  }
+}
+
+function gameStart(){
+  if(anim.game.getStatus() == 0){
+    anim.game.start();
   }
 }
 
@@ -558,6 +570,16 @@ function testFire(){
     const index = score % 9;
     startAnim(index);
     anim.game.addScore(score);
+  }
+}
+
+function resetGame(){
+  anim.game.endSession();
+}
+
+function onGameStatusChange(e){
+  if(e.status == 3){ // ランキングへ反映
+    uirank.updateCenterScores(e.scores);
   }
 }
 
