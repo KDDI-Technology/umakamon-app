@@ -2,11 +2,11 @@ import * as PIXI from '/libs/pixi.min-v6.2.1.mjs';
 
 const DEB = false;
 
-const COUNTDOWN_FV_TIME = 60;         // 1s: チャレンジ開始
-const COUNTDOWN_NUM_TIME = 30;        // 1s: 3-1
-const COUNTDOWN_PLAYSTART_TIME = 30;  // 1s: スタート
-const COUNTDOWN_ANIM_COUNT_TIME = 10; // 10 tick
-const ADDSCORE_COUNT_TIME = 12;
+const COUNTDOWN_FV_TIME =  60;        // 1s: チャレンジ開始
+const COUNTDOWN_NUM_TIME = 60;        // 1s: 3-1
+const COUNTDOWN_PLAYSTART_TIME = 60;  // 1s: スタート
+const COUNTDOWN_ANIM_COUNT_TIME = 20; // 10 tick
+const ADDSCORE_COUNT_TIME = 24;
 const RESULT_LATCH_TIME = 5000;       // 5s
 
 class game{

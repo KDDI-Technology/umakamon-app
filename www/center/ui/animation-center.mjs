@@ -61,8 +61,8 @@ class animation{
     this.wrapper = wrapper;
     this.wrapper.appendChild(this.app.view);
 
-    this.app.ticker.maxFPS = 30;
-    this.app.ticker.speed = 0.5;
+    this.app.ticker.maxFPS = 60;
+    this.app.ticker.speed = 1;
     this.app.ticker.add((delta) => {
       this.updateBgLines();
       this.updateFaces();
