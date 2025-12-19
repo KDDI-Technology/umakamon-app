@@ -1,4 +1,5 @@
 import * as PIXI from '/libs/pixi.min-v6.2.1.mjs';
+import Voices from "/libs/voices.mjs";
 
 const DEB = false;
 
@@ -10,21 +11,24 @@ const ADDSCORE_COUNT_TIME = 24;
 const RESULT_LATCH_TIME = 5000;       // 5s
 
 class game{
-  constructor(app){
+  constructor(app,atx){
     this.app = app;
+    this.atx = atx;
     this.status = 0; // 0: stop 1: countdown 2: playing 3: result 4: wait return
     this.countdownValue = null; // 4: チャレンジ開始 3-1:数字表示 0:スタート!
     this.onGameStatusChange = null; // this.status が変化するタイミングでfire
     this.tickCount = 0;
     this.closeWaiting = false;
     this.socket = null;
+    this.voices = new Voices(this.atx);
   }
-  init(){
+  async init(){
     if(DEB) console.log("game.init()");
     this.status = 0;
     this.initCountDown();
     this.initPlaying();
     this.initResult();
+    await this.voices.load();
   }
   update(){
     this.updateCountDown();
@@ -71,13 +75,16 @@ class game{
     this.countdownContainer.position.set(this.app.screen.width/2,this.app.screen.height/2);
     this.countdownContainer.visible = false;
     this.app.stage.addChild(this.countdownContainer);
+    this.voiceShot = null;
   }
   startCountDown(){
+    this.voices.playTag(null,"whistle",0.6);
     this.status = 1;
     this.countdownText.text = "チャレンジ開始！";
     this.countdownContainer.visible = true;
     this.countdownValue = 4;
     this.tickCount = 0;
+    this.voiceShot = null;
     this.countdownAnimCnt = COUNTDOWN_ANIM_COUNT_TIME;
     if(this.onGameStatusChange != null){
       this.onGameStatusChange({status:this.status});
@@ -95,19 +102,48 @@ class game{
     let tickTh = null;
     switch(this.countdownValue){
     case 4:
+    console.log("4");
       tickTh = COUNTDOWN_FV_TIME;
+      if(this.voiceShot != this.countdownValue){
+        console.log("4 1st");
+      }
+      this.voiceShot = this.countdownValue;
       break;
     case 3:
+    console.log("3");
       tickTh = COUNTDOWN_FV_TIME+COUNTDOWN_NUM_TIME;
+      if(this.voiceShot != this.countdownValue){
+        console.log("3 1st");
+        this.voices.playTag(null,"3",1);
+      }
+      this.voiceShot = this.countdownValue;
       break;
     case 2:
+    console.log("2");
       tickTh = COUNTDOWN_FV_TIME+(COUNTDOWN_NUM_TIME*2);
+      if(this.voiceShot != this.countdownValue){
+        console.log("2 1st");
+        this.voices.playTag(null,"2",0.8);
+      }
+      this.voiceShot = this.countdownValue;
       break;
     case 1:
+    console.log("1");
       tickTh = COUNTDOWN_FV_TIME+(COUNTDOWN_NUM_TIME*3);
+      if(this.voiceShot != this.countdownValue){
+        console.log("1 1st");
+        this.voices.playTag(null,"1",0.8);
+      }
+      this.voiceShot = this.countdownValue;
       break;
     case 0:
+    console.log("0");
       tickTh = COUNTDOWN_FV_TIME+(COUNTDOWN_NUM_TIME*3)+COUNTDOWN_PLAYSTART_TIME;
+      if(this.voiceShot != this.countdownValue){
+        console.log("0 1st");
+        this.voices.playTag(null,"start",0.8);
+      }
+      this.voiceShot = this.countdownValue;
       break;
     default:
       break;
@@ -204,6 +240,7 @@ class game{
   startPlaying(){
     this.status = 2;
     this.score = 0;
+    this.voices.playTag(null,"whistle2",0.6);
     this.ptimeText.text = "残り 30 秒";
     this.scoreText.text = "得点 0 pt";
     this.playingContainer.visible = true;
@@ -222,6 +259,7 @@ class game{
     }
     const now = Date.now();
     if(now >= (this.playPrevTime + 1000)){
+      this.voices.playTag(null,"whistle2",0.6);
       this.playCounter --;
       if(this.playCounter == 0){
         console.log("playing end");
@@ -237,9 +275,9 @@ class game{
     if(this.addScoreCounter > 0){
       console.log("addScoreCounter="+this.addScoreCounter);
       this.addScoreCounter --;
-      this.addScoreText.scale.x *= 1.1;
-      this.addScoreText.scale.y *= 1.1;
-      this.addScoreText.rotation += 0.1;
+      this.addScoreText.scale.x *= 1.02;
+      this.addScoreText.scale.y *= 1.02;
+      this.addScoreText.rotation += 0.03;
       if(this.addScoreCounter == 0){
         this.addScoreText.visible = false;
       }
@@ -252,15 +290,26 @@ class game{
     if(mode == "guest"){
       return;
     }
-    this.addScoreText.text = "+"+score;
+    if(score >= 0){
+      this.addScoreText.text = "+"+score;
+      this.addScoreText.style.fill = 0x30FFA0;
+    }else{
+      this.addScoreText.text = score;
+      this.addScoreText.style.fill = 0xFF0000;
+    }
     this.addScoreCounter = ADDSCORE_COUNT_TIME;
     this.addScoreText.visible = true;
     let scale=0.2;
-    if((score >= 10)&&(score < 30)){
-      scale = 0.5;
-    }else if((score >= 30)&&(score < 50)){
+    let check = Math.abs(score);
+    if((check >= 0)&&(check < 50)){
+      scale = 0.3;
+    }else if((check >= 50)&&(check < 100)){
+      scale = 0.6;
+    }else if((check >= 100)&&(check < 300)){
       scale = 1;
-    }else if((score >= 50)&&(score < 60)){
+    }else if((check >= 300)&&(check < 1000)){
+      scale = 1.5;
+    }else if(check >= 1000){
       scale = 2;
     }
     this.addScoreText.scale.set(scale);
@@ -293,7 +342,7 @@ class game{
     });
     this.resRankText = new PIXI.Text('あなたの順位は　　位です。', resRankStyle);
     this.resRankText.anchor.set(0.5);
-    this.resRankText.position.set(0,this.app.screen.height/3);
+    this.resRankText.position.set(0,this.app.screen.height/4);
     const resRNumStyle = new PIXI.TextStyle({
       fontFamily: 'KTEGAKI',
       fontSize:140,
@@ -303,7 +352,7 @@ class game{
     });
     this.resRNumText = new PIXI.Text('0', resRNumStyle);
     this.resRNumText.anchor.set(0.5);
-    this.resRNumText.position.set(120,this.app.screen.height/3);
+    this.resRNumText.position.set(120,this.app.screen.height/4);
 
     this.resultContainer = new PIXI.Container();
     this.resultContainer.addChild(this.resScoreText);
@@ -315,14 +364,19 @@ class game{
   }
   async startResult(){
     this.status = 3;
+    this.voices.playTag(null,"whistle",0.6);
     this.resScoreText.text = this.score+" pt";
     this.tickCount = 0;
     let _scores = null;
     this.resultTimer = setTimeout(()=>{
       this.status = 4;
+      this.voices.playTag(null,"owari",0.8);
       if(this.closeWaiting){
         this.endSession();
         this.closeWaiting = false;
+      }
+      if(this.onGameStatusChange != null){
+        this.onGameStatusChange({status:this.status});
       }
       this.resultTimer = null;
     },5000);
@@ -370,8 +424,8 @@ class game{
     this.ptimeText.position.set(this.app.screen.width / 4,20);
     this.addScoreText.position.set(this.app.screen.width/2,this.app.screen.height/2);
     this.resultContainer.position.set(this.app.screen.width/2,this.app.screen.height/2);
-    this.resRankText.position.set(0,this.app.screen.height/3);
-    this.resRNumText.position.set(120,this.app.screen.height/3);
+    this.resRankText.position.set(0,this.app.screen.height/4);
+    this.resRNumText.position.set(120,this.app.screen.height/4);
   }
 
 }

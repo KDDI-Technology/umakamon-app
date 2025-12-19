@@ -146,7 +146,7 @@ html,body {
 }
 .label{
   background-color: yellow;
-  width:50px;
+  width:70px;
   height:20px;
   line-height: 20px;
   vertical-align: middle;
@@ -227,15 +227,50 @@ html,body {
   padding:0px 20px;
   border-radius: 20px;
 }
+#spongeConnWrap{
+  position:absolute;
+  bottom:210px;
+  left:10px;
+  width:120px;
+  height:20px;
+  display: flex;
+}
+#canConnWrap{
+  position:absolute;
+  bottom:180px;
+  left:10px;
+  width:120px;
+  height:20px;
+  display: flex;
+}
+#canModeWrap{
+  position:absolute;
+  bottom:150px;
+  left:10px;
+  width:120px;
+  height:20px;
+  display: flex;
+}
 #connectionWrap{
   position:absolute;
   bottom:90px;
   left:10px;
-  width:100px;
+  width:120px;
   height:20px;
   display: flex;
 }
-#connectionValue{
+#canModeValue{
+  background-color: white;
+  color:black;
+  width:50px;
+  height:20px;
+  line-height:20px;
+  vertical-align: middle;
+  text-align: center;
+  font-size:16px;
+  border-radius:0 10px 10px 0;
+}
+#connectionValue,#canConnValue,#spongeConnValue{
   background-color: white;
   color:black;
   width:50px;
@@ -250,7 +285,7 @@ html,body {
   position:absolute;
   bottom:120px;
   left:10px;
-  width:100px;
+  width:120px;
   height:20px;
   display: flex;
 }
@@ -345,6 +380,18 @@ html,body {
   <div class="talogo"></div>
   <div id="titleWrapper">
   </div>
+  <div id="spongeConnWrap">
+    <div class="label">スポ接</div>
+    <div id="spongeConnValue">❌</div>
+  </div>
+  <div id="canModeWrap">
+    <div class="label">缶出力</div>
+    <div id="canModeValue">停止</div>
+  </div>
+  <div id="canConnWrap">
+    <div class="label">缶接続</div>
+    <div id="canConnValue">❌</div>
+  </div>
   <div id="connectionWrap">
     <div class="label">サーバ</div>
     <div id="connectionValue">❌</div>
@@ -374,6 +421,9 @@ const $pixi_wrapper = document.querySelector('#pixi_wrapper');
 const $loading = document.querySelector('#loading');
 const $loadingAnim = document.querySelector('#loadingAnim');
 const $main = document.querySelector('#main');
+const $canModeValue = document.querySelector('#canModeValue');
+const $spongeConnValue = document.querySelector('#spongeConnValue');
+const $canConnValue = document.querySelector('#canConnValue');
 const $connectionValue = document.querySelector('#connectionValue');
 const $dtitle = document.querySelector('#dtitle');
 
@@ -382,7 +432,6 @@ const $icon = document.head.querySelector('link[rel="icon"]');
 const $logo = document.querySelector(".logo");
 const $dpig = document.querySelector("#dpig");
 const $usersValue = document.querySelector("#usersValue");
-
 const $userIcon = document.querySelector("#userIcon");
 const $userName = document.querySelector("#userName");
 //const $userScore = document.querySelector("#userScore");
@@ -434,7 +483,7 @@ function playEfx(num){
   sampler.play();
 }
 
-import smp from "/libs/colabPlayer.mjs";
+import smp from "./ui/colabPlayer-cans.mjs";
 let ac = new AudioContext();
 const smp2 = new smp(ac);
 await smp2.load();
@@ -468,8 +517,8 @@ await requestWakeLock();
 
 import animation from "./ui/animation-center.mjs";
 
-const anim = new animation();
-anim.init($pixi_wrapper);
+const anim = new animation(ac);
+await anim.init($pixi_wrapper);
 
 window.addEventListener('resize', ()=>{
   const width = $main.getBoundingClientRect().width;
@@ -487,6 +536,51 @@ observer.observe($main, {
   attributeFilter: ["style"]
 });
 
+///////////////////////////////////////////////////////////////////////
+// 缶
+import Cans from "/libs/canout.mjs";
+const cans = new Cans();
+await cans.init();
+cans.setOnChange(onChangeCans);
+onChangeCans(cans.getDevices());
+
+function onChangeCans(cans){
+  if(cans.length == 0){
+    $canConnValue.innerHTML = "❌";
+    $canConnValue.classList.remove("connected");
+  }else{
+    $canConnValue.innerHTML = "⭕️";
+    $canConnValue.classList.add("connected");
+  }
+}
+
+///////////////////////////////////////////////////////////////////////
+// スポンジ
+import Sponge from "/libs/spongeMIDI.mjs";
+const sponge = new Sponge();
+await sponge.init();
+sponge.setOnChange(onChangeSponge);
+sponge.setOnSponge(onSponge);
+onChangeSponge(sponge.getDevices());
+
+function onChangeSponge(sponges){
+  if(sponges.length == 0){
+    $spongeConnValue.innerHTML = "❌";
+    $spongeConnValue.classList.remove("connected");
+  }else{
+    $spongeConnValue.innerHTML = "⭕️";
+    $spongeConnValue.classList.add("connected");
+  }
+}
+
+function onSponge(val){
+
+  const base = (40>val)? val : -val;
+  const score = base*(Math.floor(Math.random()*50));
+  console.log("onSponge() val="+val+" score="+score);  
+
+  fire(score);
+}
 
 ///////////////////////////////////////////////////////////////////////
 // WebSocket
@@ -550,14 +644,27 @@ $loadingAnim.classList.add("hide");
 document.body.onkeydown = function(ev){
   console.log("keydown: "+ev.keyCode);
   switch(ev.keyCode){
+  case 32: $start.click();  break;  // space
   case 48: testFire();  break;  // 0
   case 49: gameStart(); break;  // 1
   case 50: ; break; // 2
   case 51: ; break; // 3
   case 52: ; break; // 4
   case 53: ; break; // 5
-  case 67: resetGame(); break; // c
+  case 67: toggleCanMode(); break; // c
+  case 69: resetGame(); break; // e
+  case 82: uirank.click(); break; // r
   default:break;
+  }
+}
+
+function toggleCanMode(){
+  if(smp2.canMode){
+    smp2.setCanMode(false);
+    $canModeValue.innerHTML = "停止";
+  }else{
+    smp2.setCanMode(true);
+    $canModeValue.innerHTML = "出力";
   }
 }
 
@@ -568,10 +675,16 @@ function gameStart(){
 }
 
 function testFire(){
+  const score = Math.floor(Math.random()*60);
+  fire(score);
+}
+
+function fire(score){
   if(anim.game.getStatus() == 2){
-    const score = Math.floor(Math.random()*60);
-    const index = score % 9;
-    startAnim(index);
+    if(score >= 0){
+      const index = score % 9;
+      startAnim(index);
+    }
     anim.game.addScore(score,"center");
   }
 }
@@ -581,8 +694,18 @@ function resetGame(){
 }
 
 function onGameStatusChange(e){
-  if(e.status == 3){ // ランキングへ反映
+  switch(e.status){
+  case 1:
+    uirank.hide();
+    break;    
+  case 3:
     uirank.updateCenterScores(e.scores);
+    break;    
+  case 4:
+    uirank.show();
+    break;
+  default:
+    break;
   }
 }
 

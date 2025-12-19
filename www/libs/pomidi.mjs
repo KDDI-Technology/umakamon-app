@@ -16,7 +16,7 @@
 // 2023.09.22 ES6 export
 // 2024.11.20 setHandler() Changed to not execute handle Event until setHandler is called.
 
-const DEB = false;
+const DEB = true;
 
 class handler{
   constructor(){

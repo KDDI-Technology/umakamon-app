@@ -229,6 +229,9 @@ class uiRankingCenter{
     await this.#updateRanking();
     await this.#updateCenterScores();
   }
+  click(){
+    this.$toggle.click();
+  }
   hide(){
     this.$main.classList.add("hide");
     this.$cMain.classList.add("hide");

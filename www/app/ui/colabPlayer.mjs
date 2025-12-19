@@ -1,7 +1,7 @@
 // colabPlayer.mjs
 // (C)2024 by D.F.Mac.@TripArts Music
 
-import Posmp from "./posmp2.mjs";
+import Posmp from "/libs/posmp2.mjs";
 
 const DEB = false;
 

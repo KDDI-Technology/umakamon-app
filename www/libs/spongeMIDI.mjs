@@ -68,6 +68,9 @@ class spongeMIDI{
       this.onChange(this.deviceNames);
     }
   }
+  getDevices(){
+    return this.deviceNames;
+  }
   setOnChange(func){
     console.log("spongeMIDI.setOnChange()");
     this.onChange = func;

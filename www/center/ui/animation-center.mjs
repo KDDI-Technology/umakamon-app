@@ -1,5 +1,6 @@
 import * as PIXI from '/libs/pixi.min-v6.2.1.mjs';
 import animGame from './animation-game.mjs';
+import Chicken from './animation-chicken.mjs';
 import Users from './animation-user.mjs';
 
 const DEB = false;
@@ -29,7 +30,7 @@ const MAX_BG_TICKS = 120;
 let isBgExist = false;
 let dispCont = 0;
 let rotatecnt = 0;
-let rotationSpeed = 0.1; //(Math.random() * 0.1)+0.005;
+let rotationSpeed = 0.05; //(Math.random() * 0.1)+0.005;
 
 const colors = [
   0xFF0080,
@@ -42,7 +43,7 @@ const colors = [
 ];
 
 class animation{
-  constructor(){
+  constructor(atx){
     this.app = new PIXI.Application({
       width: window.innerWidth,
       height: window.innerHeight,
@@ -52,10 +53,11 @@ class animation{
     this.resizeTimer = null;
     this.wrapper = null;
     this.nowFaceIdx = null;
+    this.chicken = new Chicken(this.app,atx);
     this.users = new Users(this.app);
-    this.game = new animGame(this.app);
+    this.game = new animGame(this.app,atx);
   }
-  init(wrapper){
+  async init(wrapper){
     if(DEB) console.log("animation.init()");
 
     this.wrapper = wrapper;
@@ -66,13 +68,16 @@ class animation{
     this.app.ticker.add((delta) => {
       this.updateBgLines();
       this.updateFaces();
+      this.chicken.update();
       this.users.update();
       this.game.update();
     });
     this.initBgLines();
     this.initFaces();
+    await this.chicken.init();
+    this.chicken.setOnChicken(this.onChicken.bind(this));
     this.users.init();
-    this.game.init();
+    await this.game.init();
   }
 
   ///////////////////////////////////////////////////////////////////////
@@ -136,22 +141,6 @@ class animation{
       }
     }
   }
-  /////////////////////////////////////
-  // CountDown
-  /////////////////////////////////////
-  initStartup(){
-    this.startupStyle = new PIXI.TextStyle({
-      fontFamily: 'KTEGAKI',
-      fontSize:128,
-      fill:0xFF0000
-    });
-    const text = new PIXI.Text('3', this.startupStyle);
-    this.startupContainer = new PIXI.Container();
-    this.startupContainer.position.set(CONTENT_WIDTH/2,CONTENT_HEIGHT/2);
-    this.app.stage.addChild(this.startupContainer);
-
-  }
-
 
   /////////////////////////////////////
   // faces
@@ -178,15 +167,15 @@ class animation{
       return;
     }
     this.nowFaceIdx = index;
-    this.faceSpr[index].speed = (Math.random() * 2) - 1;
+    this.faceSpr[index].speed = (Math.random() * 0.2);
     this.faceContainer.removeChildren();
     this.faceContainer.addChild(this.faceSpr[index]); 
   }
   updateFaces(){
     if(this.nowFaceIdx != null){
       this.faceSpr[this.nowFaceIdx].rotation += this.faceSpr[this.nowFaceIdx].speed;
-      this.faceSpr[this.nowFaceIdx].scale.x += 0.1;
-      this.faceSpr[this.nowFaceIdx].scale.y += 0.1;
+      this.faceSpr[this.nowFaceIdx].scale.x += 0.05;
+      this.faceSpr[this.nowFaceIdx].scale.y += 0.05;
     }
   }
   removeFace(){
@@ -196,6 +185,12 @@ class animation{
       this.faceSpr[this.nowFaceIdx].scale.y = 0.5;
       this.faceContainer.removeChildren();
       this.nowFaceIdx = null;
+    }
+  }
+  onChicken(){
+    const score = Math.floor(300+Math.random()*700);
+    if(this.game.status == 2){
+      this.game.addScore(score,"center");
     }
   }
 
@@ -217,6 +212,8 @@ class animation{
       this.grpContainer.position.set(CONTENT_WIDTH / 2, CONTENT_HEIGHT / 2);
       this.grpContainer.pivot.x = CONTENT_WIDTH/2; 
       this.grpContainer.pivot.y = CONTENT_HEIGHT/2; 
+      this.chicken.resize();
+      this.users.resize();
       this.game.resize();
     },50);
   }

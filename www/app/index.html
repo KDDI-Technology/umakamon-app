@@ -463,7 +463,7 @@ function playEfx(num){
   sampler.play();
 }
 
-import smp from "/libs/colabPlayer.mjs";
+import smp from "./ui/colabPlayer.mjs";
 let ac = new AudioContext();
 const smp2 = new smp(ac);
 await smp2.load();
