@@ -24,6 +24,12 @@ const faces = [
   '/img/nagasaki/9.png'
 ];
 
+const kusos = [
+  '/img/kuso/kuso1.png',
+  '/img/kuso/kuso2.png',
+  '/img/kuso/kuso3.png'
+];
+
 const BG_LINES = 48;
 const MAX_BG_TICKS = 120;
 
@@ -53,6 +59,7 @@ class animation{
     this.resizeTimer = null;
     this.wrapper = null;
     this.nowFaceIdx = null;
+    this.nowKusoIdx = null;
     this.chicken = new Chicken(this.app,atx);
     this.users = new Users(this.app);
     this.game = new animGame(this.app,atx);
@@ -68,12 +75,14 @@ class animation{
     this.app.ticker.add((delta) => {
       this.updateBgLines();
       this.updateFaces();
+      this.updateKusos();
       this.chicken.update();
       this.users.update();
       this.game.update();
     });
     this.initBgLines();
     this.initFaces();
+    this.initKusos();
     await this.chicken.init();
     this.chicken.setOnChicken(this.onChicken.bind(this));
     this.users.init();
@@ -187,6 +196,52 @@ class animation{
       this.nowFaceIdx = null;
     }
   }
+
+  /////////////////////////////////////
+  // kusos
+  /////////////////////////////////////
+  initKusos(){
+    this.kusoContainer = new PIXI.Container();
+    this.kusoContainer.position.set(CONTENT_WIDTH/2,CONTENT_HEIGHT/2);
+    this.app.stage.addChild(this.kusoContainer);
+    this.kusoTex = [];
+    this.kusoSpr = [];
+    for(let cnt=0;cnt<kusos.length;cnt++){
+      let tex = PIXI.Texture.from(kusos[cnt]);
+      this.kusoTex.push(tex);
+      let spr = new PIXI.Sprite(tex);
+      spr.anchor.x = 0.5;
+      spr.anchor.y = 0.5;
+      spr.scale.x = 0.5;
+      spr.scale.y = 0.5;
+      this.kusoSpr.push(spr);
+    }
+  }
+  addKuso(index){
+    index %= kusos.length;
+    this.nowKusoIdx = index;
+    this.kusoSpr[index].speed = (Math.random() * 0.2);
+    this.kusoContainer.removeChildren();
+    this.kusoContainer.addChild(this.kusoSpr[index]); 
+  }
+  updateKusos(){
+    if(this.nowKusoIdx != null){
+      this.kusoSpr[this.nowKusoIdx].rotation += this.kusoSpr[this.nowKusoIdx].speed;
+      this.kusoSpr[this.nowKusoIdx].scale.x += 0.05;
+      this.kusoSpr[this.nowKusoIdx].scale.y += 0.05;
+    }
+  }
+  removeKuso(){
+    if(this.nowKusoIdx != null){
+      this.kusoSpr[this.nowKusoIdx].rotation = 0;
+      this.kusoSpr[this.nowKusoIdx].scale.x = 0.5;
+      this.kusoSpr[this.nowKusoIdx].scale.y = 0.5;
+      this.kusoContainer.removeChildren();
+      this.nowKusoIdx = null;
+    }
+  }
+
+  // chicken
   onChicken(){
     const score = Math.floor(300+Math.random()*700);
     if(this.game.status == 2){

@@ -227,6 +227,14 @@ html,body {
   padding:0px 20px;
   border-radius: 20px;
 }
+#gameConnWrap{
+  position:absolute;
+  bottom:240px;
+  left:10px;
+  width:120px;
+  height:20px;
+  display: flex;
+}
 #spongeConnWrap{
   position:absolute;
   bottom:210px;
@@ -270,7 +278,7 @@ html,body {
   font-size:16px;
   border-radius:0 10px 10px 0;
 }
-#connectionValue,#canConnValue,#spongeConnValue{
+#connectionValue,#canConnValue,#spongeConnValue,#gameConnValue{
   background-color: white;
   color:black;
   width:50px;
@@ -380,6 +388,10 @@ html,body {
   <div class="talogo"></div>
   <div id="titleWrapper">
   </div>
+  <div id="gameConnWrap">
+    <div class="label">コン接</div>
+    <div id="gameConnValue">?</div>
+  </div>
   <div id="spongeConnWrap">
     <div class="label">スポ接</div>
     <div id="spongeConnValue">❌</div>
@@ -422,6 +434,7 @@ const $loading = document.querySelector('#loading');
 const $loadingAnim = document.querySelector('#loadingAnim');
 const $main = document.querySelector('#main');
 const $canModeValue = document.querySelector('#canModeValue');
+const $gameConnValue = document.querySelector('#gameConnValue');
 const $spongeConnValue = document.querySelector('#spongeConnValue');
 const $canConnValue = document.querySelector('#canConnValue');
 const $connectionValue = document.querySelector('#connectionValue');
@@ -454,15 +467,20 @@ document.onvisibilitychange = async (e) =>{
 }
 
 let animTimer = null;
+let kusoTimer = null;
 const ANIM_TIME = 1000;
 
-function startAnim(_index){
+function startAnim(_index,mode){
   if(animTimer != null){
     clearTimeout(animTimer);
     anim.removeFace();
   }
   let sindex = Math.floor(Math.random() * 16);
-  smp2.play(null,sindex,1);
+  if(mode != undefined){
+    smp2.playSoundOnly(null,sindex,1);
+  }else{
+    smp2.play(null,sindex,1);
+  }
   anim.startBgLines();
   anim.addFace(_index);
   animTimer = setTimeout((e)=>{
@@ -471,6 +489,27 @@ function startAnim(_index){
     animTimer = null;
   },ANIM_TIME);
 }
+
+function startKuso(_index,mode){
+  if(kusoTimer != null){
+    clearTimeout(kusoTimer);
+    anim.removeKuso();
+  }
+  let sindex = Math.floor(Math.random() * 3);
+  if(mode != undefined){
+    efx.playSoundOnly(null,sindex,1);
+  }else{
+    efx.play(null,sindex,1);
+  }
+  anim.startBgLines();
+  anim.addKuso(_index);
+  kusoTimer = setTimeout((e)=>{
+    anim.stopBgLines();
+    anim.removeKuso();
+    kusoTimer = null;
+  },ANIM_TIME);
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 // UI Efx
@@ -488,6 +527,9 @@ let ac = new AudioContext();
 const smp2 = new smp(ac);
 await smp2.load();
 
+import Efx from "./ui/efxPlayer.mjs";
+const efx = new Efx(ac);
+await efx.load();
 
 ///////////////////////////////////////////////////////////////////////
 // screen wake lock
@@ -579,7 +621,7 @@ function onSponge(val){
   const score = base*(Math.floor(Math.random()*50));
   console.log("onSponge() val="+val+" score="+score);  
 
-  fire(score);
+  fire(score,0);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -633,6 +675,44 @@ const imgLoader = new bgimage($pixi_wrapper);
 await imgLoader.load();
 
 ///////////////////////////////////////////////////////////////////////
+// Gamepad
+import "/libs/joypad.min.js";
+
+joypad.on("connect",(e)=>{
+  console.log("gamepad connected! name="+e.gamepad.id);
+  $gameConnValue.innerHTML = "⭕️";
+  $gameConnValue.classList.add("connected");
+});
+joypad.on("disconnect",(e)=>{
+  console.log("gamepad disconnected! name="+e.gamepad.id);
+  $gameConnValue.innerHTML = "❌";
+  $gameConnValue.classList.remove("connected");
+});
+joypad.on("button_press",(e)=>{
+  const button = e.detail.buttonName;
+  let index = null;
+  console.log("gamepad press="+button); 
+  switch(button){
+  case "button_0":  index = 1; break;
+  case "button_1":  index = 2; break;
+  case "button_2":  index = 3; break;
+  case "button_3":  index = 4; break;
+  case "button_12": index = 5; break;
+  case "button_13": index = 6; break;
+  case "button_14": index = 7; break;
+  case "button_15": index = 8; break;
+  }
+  if(index != null){
+    startAnim(index);
+    if(anim.game.getStatus() == 2){
+      const score = Math.floor(Math.random()*40);
+      anim.game.addScore(score,"center");
+    }
+  }
+
+});
+
+///////////////////////////////////////////////////////////////////////
 // for game socket 
 anim.game.setSocket(socket);
 anim.game.setOnGameStatusChange(onGameStatusChange);
@@ -643,7 +723,6 @@ anim.game.setOnGameStatusChange(onGameStatusChange);
 $loading.innerHTML = "ロードがおわりました！ <br>下のボタンを押してね！ ↓↓↓";
 $start.classList.remove("hide");
 $loadingAnim.classList.add("hide");
-
 
 ///////////////////////////////////////////////////////////////////////
 // Key Event
@@ -685,12 +764,19 @@ function testFire(){
   fire(score);
 }
 
-function fire(score){
-  if(anim.game.getStatus() == 2){
-    if(score >= 0){
-      const index = score % 9;
-      startAnim(index);
+function fire(score,index){
+  if(score >= 0){
+    if(index == undefined){
+      index = (score % 8)+1;
     }
+    startAnim(index);
+  }else{
+    if(index == undefined){
+      index = (score % 3);
+    }
+    startKuso(index);
+  }
+  if(anim.game.getStatus() == 2){
     anim.game.addScore(score,"center");
   }
 }
