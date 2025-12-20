@@ -86,6 +86,13 @@ class colabPlayer{
       this.cans.play(index%8);
     }
   }
+  playSoundOnly(at,index,_velocity){
+    if(DEB) console.log("colabPlayer.playSoundOnly() at="+at+" index="+index+" vel="+_velocity);
+    this.context.resume();
+    let sampler = this.samplers[index].smp;
+    let _when = at;
+    sampler.play({when:_when},(this.gain*_velocity));
+  }
   polyPlay(at,indexes){
     if(DEB) console.log("colabPlayer.polyPlay() at="+at);
     for(let cnt=0;cnt<indexes.length;cnt++){

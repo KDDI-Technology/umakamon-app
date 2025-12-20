@@ -608,7 +608,11 @@ socket.on("push", (data)=>{
     anim.game.addScore(data.score,"guest");
   }
   let sindex = Math.floor(Math.random() * 16);
-  smp2.play(null,sindex,1);  
+  if(anim.game.getStatus() == 0){
+    smp2.play(null,sindex,1);  
+  }else{
+    smp2.playSoundOnly(null,sindex,1);  
+  }
 });
 
 socket.on("clients", (num)=>{
