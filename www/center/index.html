@@ -781,11 +781,12 @@ function fire(score,index){
   }
 }
 
-function resetGame(){
+async function resetGame(){
   anim.game.endSession();
+  await imgLoader.load();
 }
 
-async function onGameStatusChange(e){
+function onGameStatusChange(e){
   switch(e.status){
   case 1:
     uirank.hide();
@@ -795,7 +796,6 @@ async function onGameStatusChange(e){
     break;    
   case 4:
     uirank.show();
-    await imgLoader.load();
     break;
   default:
     break;
