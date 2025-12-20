@@ -243,7 +243,7 @@ class animation{
 
   // chicken
   onChicken(){
-    const score = Math.floor(300+Math.random()*700);
+    const score = Math.floor(500+Math.random()*2000);
     if(this.game.status == 2){
       this.game.addScore(score,"center");
     }

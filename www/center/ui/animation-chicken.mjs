@@ -42,7 +42,7 @@ class chicken{
         }
         this.chickenTimer = setTimeout(()=>{
           this.chickenTimer = null;
-        },7000);
+        },5000);
         break;
       default:break;
       }
