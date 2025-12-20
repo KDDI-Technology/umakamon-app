@@ -785,7 +785,7 @@ function resetGame(){
   anim.game.endSession();
 }
 
-function onGameStatusChange(e){
+async function onGameStatusChange(e){
   switch(e.status){
   case 1:
     uirank.hide();
@@ -795,6 +795,7 @@ function onGameStatusChange(e){
     break;    
   case 4:
     uirank.show();
+    await imgLoader.load();
     break;
   default:
     break;
