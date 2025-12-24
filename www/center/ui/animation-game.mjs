@@ -3,7 +3,7 @@ import Voices from "/libs/voices.mjs";
 
 const DEB = false;
 
-const COUNTDOWN_FV_TIME =  60;        // 1s: チャレンジ開始
+const COUNTDOWN_FV_TIME =  120;        // 1s: チャレンジ開始
 const COUNTDOWN_NUM_TIME = 60;        // 1s: 3-1
 const COUNTDOWN_PLAYSTART_TIME = 60;  // 1s: スタート
 const COUNTDOWN_ANIM_COUNT_TIME = 20; // 10 tick
