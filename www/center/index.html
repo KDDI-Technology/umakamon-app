@@ -227,6 +227,15 @@ html,body {
   padding:0px 20px;
   border-radius: 20px;
 }
+#onebtnConnWrap{
+  position:absolute;
+  bottom:270px;
+  left:10px;
+  width:120px;
+  height:20px;
+  display: flex;
+}
+
 #gameConnWrap{
   position:absolute;
   bottom:240px;
@@ -278,7 +287,7 @@ html,body {
   font-size:16px;
   border-radius:0 10px 10px 0;
 }
-#connectionValue,#canConnValue,#spongeConnValue,#gameConnValue{
+#connectionValue,#canConnValue,#spongeConnValue,#gameConnValue,#onebtnConnValue{
   background-color: white;
   color:black;
   width:50px;
@@ -388,6 +397,10 @@ html,body {
   <div class="talogo"></div>
   <div id="titleWrapper">
   </div>
+  <div id="onebtnConnWrap">
+    <div class="label">1ボ接</div>
+    <div id="onebtnConnValue">?</div>
+  </div>
   <div id="gameConnWrap">
     <div class="label">コン接</div>
     <div id="gameConnValue">?</div>
@@ -435,6 +448,7 @@ const $loadingAnim = document.querySelector('#loadingAnim');
 const $main = document.querySelector('#main');
 const $canModeValue = document.querySelector('#canModeValue');
 const $gameConnValue = document.querySelector('#gameConnValue');
+const $onebtnConnValue = document.querySelector('#onebtnConnValue');
 const $spongeConnValue = document.querySelector('#spongeConnValue');
 const $canConnValue = document.querySelector('#canConnValue');
 const $connectionValue = document.querySelector('#connectionValue');
@@ -623,6 +637,67 @@ function onSponge(val){
 
   fire(score,0);
 }
+
+///////////////////////////////////////////////////////////////////////
+// onebtn
+import OneBtn from "/libs/onebutton.mjs";
+let btn = new OneBtn();
+btn.setOnChange(onBtnChange);
+btn.setOnButton(onBtnButton);
+btn = await btn.init();
+
+if(btn == null){
+  $onebtnConnValue.innerHTML = "-";
+}else{
+  $onebtnConnValue.innerHTML = "?";
+}
+
+function onBtnChange(deviceNames){
+  if(deviceNames.length > 0){
+    $onebtnConnValue.innerHTML = "⭕️";
+    $onebtnConnValue.classList.add("connected");
+  }else{
+    $onebtnConnValue.innerHTML = "❌";
+    $onebtnConnValue.classList.remove("connected");
+  }
+}
+
+function onBtnButton(num,val,device){
+  console.log("onBtnButton  ["+num+"]="+val);
+  if(num == 110){
+    let index = Math.floor(Math.random() * 16);
+    startAnim((index%8)+1);
+    if(anim.game.getStatus() == 2){ // playing
+      let multi =0;
+      switch(index){
+      case 0:  multi =  5; break;
+      case 1:  multi =  7; break;
+      case 2:  multi = 10; break;
+      case 3:  multi = 15; break;
+      case 4:  multi = 20; break;
+      case 5:  multi = 25; break;
+      case 6:  multi = 30; break;
+      case 7:  multi = 35; break;
+      case 8:  multi = 40; break;
+      case 9:  multi = 50; break;
+      case 10: multi = 60; break;
+      case 11: multi = 70; break;
+      case 12: multi = 80; break;
+      case 13: multi = 90; break;
+      case 14: multi = 100; break;
+      case 15: multi = 200; break;
+      }
+      const score = Math.floor(multi * Math.random() * 2);
+      anim.game.addScore(score,"center");
+    }
+    if(anim.game.getStatus() == 0){
+      smp2.play(null,index,1);  
+    }else{
+      smp2.playSoundOnly(null,index,1);  
+    }
+  }
+}
+
 
 ///////////////////////////////////////////////////////////////////////
 // WebSocket
