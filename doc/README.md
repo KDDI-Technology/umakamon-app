@@ -36,6 +36,11 @@ BASIC_PASS=yourpass
 
 > `yourid` と `yourpass` を適当に設定してください。
 
+### font配置
+
+[kawaii手書き文字](https://font.spicy-sweet.com)を利用させて頂いております。    
+`/www/libs` 直下に、 上記配布サイトからダウンロードしたフォントを配置してご利用ください。   
+
 ### 起動
 
 ```
